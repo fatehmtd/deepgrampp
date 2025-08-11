@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(DEEPGRAMPP_LIB LANGUAGES CXX)
+project(DEEPGRAMPP LANGUAGES CXX)
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -9,7 +10,6 @@ include(GNUInstallDirs)
 
 find_package(Boost REQUIRED COMPONENTS system json thread REQUIRED)
 find_package(OpenSSL REQUIRED)
-
 
 # Debug: Print Boost information
 message(STATUS "Boost_FOUND: ${Boost_FOUND}")

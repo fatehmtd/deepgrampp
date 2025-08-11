@@ -82,6 +82,9 @@
         "cstddef": "cpp",
         "iterator": "cpp",
         "system_error": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "chrono": "cpp",
+        "expected": "cpp",
+        "format": "cpp"
     }
 }
