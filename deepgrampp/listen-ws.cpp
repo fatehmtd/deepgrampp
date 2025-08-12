@@ -1,5 +1,6 @@
 
 #include "listen-ws.hpp"
+#include "listen-ws-impl.hpp"
 
 using namespace deepgram::listen;
 
@@ -27,7 +28,7 @@ ListenWebsocketClient::~ListenWebsocketClient()
     close();
 }
 
-bool ListenWebsocketClient::connect(const LiveTranscriptionOptions& options)
+bool ListenWebsocketClient::connect(const LiveTranscriptionOptions &options)
 {
     try
     {
@@ -121,7 +122,7 @@ void ListenWebsocketClient::startKeepalive()
                 try
                 {
                     beast::error_code ec;
-                    ws_.write(net::buffer(std::string(deepgram::control::KEEPALIVE_MESSAGE)), ec);
+                    ws_.write(net::buffer(std::string(deepgram::listen::control::KEEPALIVE_MESSAGE)), ec);
                     
                     if (ec)
                     {
@@ -181,6 +182,32 @@ bool ListenWebsocketClient::streamAudioFile(const std::vector<uint8_t> &audioDat
     return true;
 }
 
+bool deepgram::listen::ListenWebsocketClient::sendFinalizeMessage()
+{
+    if (!ws_.is_open())
+    {
+        std::cerr << "websocket not open" << std::endl;
+        return false;
+    }
+    try
+    {
+        beast::error_code ec;
+        // prepare to send text
+        ws_.binary(false);
+        ws_.write(net::buffer(std::string(control::FINALIZE_MESSAGE)), ec);
+        if(ec) {
+            std::cerr << "Write error: " << ec.message() << std::endl;
+            return false;
+        }
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "sendFinalizeMessage error: " << e.what() << std::endl;
+        return false;
+    }
+    return true;
+}
+
 bool ListenWebsocketClient::sendAudioChunk(const uint8_t *data, size_t size)
 {
     try
@@ -211,7 +238,7 @@ void ListenWebsocketClient::sendCloseStream()
         // Send as text message
         ws_.binary(false);
         beast::error_code ec;
-        ws_.write(net::buffer(std::string(deepgram::control::CLOSE_MESSAGE)), ec);
+        ws_.write(net::buffer(std::string(deepgram::listen::control::CLOSE_MESSAGE)), ec);
 
         if (ec)
         {
@@ -232,11 +259,11 @@ void ListenWebsocketClient::handleResponse(const std::string &message)
 {
     try
     {
-        auto json = nlohmann::json::parse(message);
+        nlohmann::json json = nlohmann::json::parse(message);
 
-        auto transcriptionResult = deepgram::listen::TranscriptionResult::fromJson(json);
+        deepgram::listen::TranscriptionResult transcriptionResult = deepgram::listen::TranscriptionResult::fromJson(json);
 
-        if (transcriptionResult.type == "Results")
+        if (transcriptionResult.type == result::RESULTS)
         {
             if (transcriptionResult.isFinal || transcriptionResult.speech_final)
             {
@@ -247,20 +274,19 @@ void ListenWebsocketClient::handleResponse(const std::string &message)
                 onPartialTranscription_(transcriptionResult);
             }
         }
-        else if (transcriptionResult.type == "Metadata")
+        else if (transcriptionResult.type == result::METADATA)
         {
             onMetadata_(json);
         }
-        else if (transcriptionResult.type == "UtteranceEnd")
+        else if (transcriptionResult.type == result::UTTERANCE_END)
         {
             deepgram::listen::UtteranceEnd utteranceEnd = deepgram::listen::UtteranceEnd::fromJson(json);
-            utteranceEnd.print();
+            onUtteranceEnd_(utteranceEnd);
         }
-        else if (transcriptionResult.type == "SpeechStarted")
+        else if (transcriptionResult.type == result::SPEECH_STARTED)
         {
             deepgram::listen::SpeechStarted speechStarted = deepgram::listen::SpeechStarted::fromJson(json);
-            speechStarted.print();
-            onSpeechStarted_();
+            onSpeechStarted_(speechStarted);
         }
         else
         {
@@ -307,14 +333,26 @@ void ListenWebsocketClient::close()
         }
     }
 
-    if (workerThread_.joinable())
+    try
     {
-        workerThread_.join();
+        if (workerThread_.joinable())
+        {
+            workerThread_.join();
+        }
+    }
+    catch (const std::exception &e)
+    {
     }
 
-    if (keepaliveThread_.joinable())
+    try
     {
-        keepaliveThread_.join();
+        if (keepaliveThread_.joinable())
+        {
+            keepaliveThread_.join();
+        }
+    }
+    catch (const std::exception &e)
+    {
     }
 
     connected_ = false;

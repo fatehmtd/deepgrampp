@@ -4,9 +4,9 @@
 #include <vector>
 #include <spdlog/spdlog.h>
 #include <functional>
-#include "deepgram.hpp"
-#include "listen-ws.hpp"
-#include "speak.hpp"
+#include "include/deepgrampp/deepgram.hpp"
+#include "include/deepgrampp/listen-ws.hpp"
+#include "include/deepgrampp/speak.hpp"
 
 std::vector<uint8_t> readAudioFile(const std::string &filePath)
 {

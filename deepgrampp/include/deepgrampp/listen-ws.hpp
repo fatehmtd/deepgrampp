@@ -1,17 +1,8 @@
 #pragma once
 
+#include <deepgrampp_lib_export.h>
 #include "listen.hpp"
 #include "deepgram.hpp"
-
-#include <boost/beast/core.hpp>
-#include <boost/beast/websocket.hpp>
-#include <boost/beast/websocket/ssl.hpp>
-#include <boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl/stream.hpp>
-#include <boost/asio/ssl/context.hpp>
-#include <boost/asio/ssl/host_name_verification.hpp>
-#include <boost/beast/http.hpp>
 
 #include <string>
 #include <iostream>
@@ -22,11 +13,23 @@
 
 namespace deepgram
 {
-    using Websocket = boost::beast::websocket::stream<boost::beast::net::ssl::stream<boost::asio::ip::tcp::socket>>;
-
     namespace listen
     {
-        class ListenWebsocketClient
+        /**
+         * Control messages for the Deepgram WebSocket API.
+         *
+         * @note These messages are used to control the WebSocket connection and stream.
+         */
+        namespace control
+        {
+            constexpr const char *CLOSE_MESSAGE = R"({"type": "CloseStream"})";
+            constexpr const char *KEEPALIVE_MESSAGE = R"({"type": "KeepAlive"})";
+            constexpr const char *FINALIZE_MESSAGE = R"({"type": "Finalize"})";
+        }
+
+        class ListenWebsocketClientImpl;
+
+        class DEEPGRAMPP_EXPORT ListenWebsocketClient
         {
         public:
             /**
@@ -53,18 +56,24 @@ namespace deepgram
              *
              * @note This method should be called before starting to send or receive messages.
              */
-            bool connect(const LiveTranscriptionOptions& options);
+            bool connect(const LiveTranscriptionOptions &options);
 
             void startReceiving();
             void startKeepalive();
             bool streamAudioFile(const std::vector<uint8_t> &audioData);
 
+            /**
+             * Use the Finalize message to flush the WebSocket stream.
+             * This forces the server to immediately process any unprocessed audio data and return the final transcription results.
+             */
+            bool sendFinalizeMessage();
+
             using PartialTranscriptionCallback = std::function<void(const TranscriptionResult &)>;
             using FinalTranscriptionCallback = std::function<void(const TranscriptionResult &)>;
             using MetadataCallback = std::function<void(const nlohmann::json &)>;
             using ErrorCallback = std::function<void(const std::string &)>;
-            using SpeechStartedCallback = std::function<void()>;
-            using UtteranceEndCallback = std::function<void(const UtteranceEnd&)>;
+            using SpeechStartedCallback = std::function<void(const SpeechStarted &)>;
+            using UtteranceEndCallback = std::function<void(const UtteranceEnd &)>;
 
             void setOnPartialTranscription(PartialTranscriptionCallback cb);
             void setOnFinalTranscription(FinalTranscriptionCallback cb);
@@ -84,12 +93,8 @@ namespace deepgram
             void handleResponse(const std::string &message);
 
         private:
-            std::string host_;
-            std::string apiKey_;
-            std::string port_;
-            boost::asio::io_context ioContext_;
-            boost::beast::net::ssl::context sslContext_;
-            Websocket ws_;
+            ListenWebsocketClientImpl* websocketClientImpl_ = nullptr;
+
             std::thread workerThread_;
             std::thread keepaliveThread_;
             std::atomic<bool> keepReceiving_;
@@ -99,8 +104,8 @@ namespace deepgram
             FinalTranscriptionCallback onFinalTranscription_ = [](const TranscriptionResult &) {};
             MetadataCallback onMetadata_ = [](const nlohmann::json &) {};
             ErrorCallback onError_ = [](const std::string &) {};
-            UtteranceEndCallback onUtteranceEnd_ = [](const UtteranceEnd&){};
-            SpeechStartedCallback onSpeechStarted_ = [](const SpeechStarted&) {};
+            UtteranceEndCallback onUtteranceEnd_ = [](const UtteranceEnd &) {};
+            SpeechStartedCallback onSpeechStarted_ = [](const SpeechStarted &) {};
         };
 
     }
