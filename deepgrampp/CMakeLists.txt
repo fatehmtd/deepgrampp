@@ -43,10 +43,13 @@ include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${OPENSSL_INCLUDE_DIR})
 
 # Add the executable for the deepgrampp library
-add_executable(deepgrampp deepgram.cpp)
+add_executable(deepgrampp
+    deepgram.cpp
+    listen-ws.cpp
+)
 
-target_link_libraries(deepgrampp 
-    PRIVATE 
+target_link_libraries(deepgrampp
+    PRIVATE
     spdlog::spdlog
     nlohmann_json::nlohmann_json
     Boost::system
