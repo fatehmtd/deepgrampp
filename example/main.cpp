@@ -58,14 +58,10 @@ int main()
         }
 
         client.setOnPartialTranscription([](const deepgram::listen::TranscriptionResult &result)
-                                         {
-            spdlog::info("Partial transcription: ");
-            result.print(); });
+                                         { spdlog::info("Partial transcription: {}", result.channel.alternatives[0].transcript); });
 
         client.setOnFinalTranscription([&client](const deepgram::listen::TranscriptionResult &result)
-                                       {
-            spdlog::info("Final transcription: ");
-            result.print(); });
+                                       { spdlog::info("Final transcription: {}", result.channel.alternatives[0].transcript); });
 
         // Start receiving messages
         client.startReceiving();

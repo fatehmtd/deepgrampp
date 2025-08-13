@@ -1,6 +1,7 @@
 
 #include "listen-ws.hpp"
 #include "listen-ws-impl-boost.hpp"
+#include <spdlog/spdlog.h>
 
 using namespace deepgram::listen;
 
@@ -48,7 +49,7 @@ void ListenWebsocketClient::startKeepalive()
 
 bool ListenWebsocketClient::streamAudioFile(const std::vector<uint8_t> &audioData)
 {
-    return websocketClientImpl_->streamAudioFile(audioData);
+    return websocketClientImpl_->streamAudioFile(audioData, 4000);
 }
 
 bool deepgram::listen::ListenWebsocketClient::sendFinalizeMessage()

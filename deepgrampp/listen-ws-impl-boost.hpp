@@ -9,8 +9,7 @@
 #include <boost/asio/ssl/host_name_verification.hpp>
 #include <boost/beast/http.hpp>
 #include <functional>
-
-using namespace deepgram::listen;
+#include <spdlog/spdlog.h>
 
 using namespace boost;
 using namespace boost::beast;
@@ -62,19 +61,19 @@ namespace deepgram
                 {
                     std::string target = options.toQueryString();
 
-                    std::cout << "target: " << target << std::endl;
+                    spdlog::debug("target: {}", target);
 
                     tcp::resolver resolver{_ioContext};
                     auto const results = resolver.resolve(_host, _port);
 
-                    std::cout << "Connecting to " << _host << ":" << _port << "..." << std::endl;
+                    spdlog::debug("Connecting to {}:{} ...", _host, _port);
                     net::connect(_webSocket.next_layer().lowest_layer(), results.begin(), results.end());
 
-                    std::cout << "Performing SSL handshake..." << std::endl;
+                    spdlog::debug("Performing SSL handshake...");
                     _webSocket.next_layer().set_verify_callback(ssl::host_name_verification(_host));
                     _webSocket.next_layer().handshake(ssl::stream_base::client);
 
-                    std::cout << "Performing WebSocket handshake..." << std::endl;
+                    spdlog::debug("Performing WebSocket handshake...");
                     _webSocket.set_option(websocket::stream_base::decorator(
                         [this](websocket::request_type &req)
                         {
@@ -83,62 +82,61 @@ namespace deepgram
                         }));
 
                     _webSocket.handshake(_host, target);
-                    std::cout << "WebSocket connected successfully!" << std::endl;
+                    spdlog::debug("WebSocket connected successfully!");
                     connected_ = true;
                     _keepReceiving = true;
                     return true;
                 }
                 catch (const std::exception &e)
                 {
-                    std::cerr << "Connection error: " << e.what() << std::endl;
+                    spdlog::error("Connection error: {}", e.what());
                     return false;
                 }
             }
 
-            void startReceiving(std::function<void(const std::string &)> callBack)
+            void startReceiving(const std::function<void(const std::string &)> &callBack)
             {
-                _dataReceptionThread = std::thread([this, &callBack]()
-                                            {
-            std::cout << "Starting receive loop..." << std::endl;
-            beast::flat_buffer buffer;
-            beast::error_code ec;
-            while (_keepReceiving && _webSocket.is_open())
-            {
-                try
-                {   
-                    size_t bytesRead = _webSocket.read(buffer, ec);
-                    
-                    if (ec == websocket::error::closed)
-                    {
-                        std::cout << "WebSocket closed by server." << std::endl;
-                        break;
-                    }
-                    
-                    if (ec)
-                    {
-                        std::cerr << "Read error: " << ec.message() << std::endl;
-                        break;
-                    }
-                    
-                    std::string message = beast::buffers_to_string(buffer.data());
-                    callBack(message);
-                    buffer.consume(bytesRead);
-                }
-                catch (const std::exception &e)
+                _dataReceptionThread = std::thread([this, callBack]()
+                                                   {
+                spdlog::debug("Starting receive loop");
+                beast::flat_buffer buffer;
+                beast::error_code ec;
+                while (_keepReceiving && _webSocket.is_open())
                 {
-                    std::cerr << "Exception in receive loop: " << e.what() << std::endl;
-                    break;
+                    try
+                    {
+                        size_t bytesRead = _webSocket.read(buffer, ec);
+
+                        if (ec == websocket::error::closed)
+                        {
+                            spdlog::error("WebSocket closed by server.");
+                            break;
+                        }
+
+                        if (ec)
+                        {
+                            spdlog::error("Read error: {}", ec.message());
+                            break;
+                        }
+                        std::string message = beast::buffers_to_string(buffer.data());
+                        callBack(message);
+                        buffer.consume(bytesRead);
+                    }
+                    catch (const std::exception &e)
+                    {
+                        spdlog::error("Exception in receive loop: {}", e.what());
+                        break;
+                    }
                 }
-            }
-            
-            std::cout << "Receive loop ended." << std::endl; });
+
+                spdlog::debug("Receive loop ended."); });
             }
 
             void startKeepalive()
             {
                 _keepaliveThread = std::thread([this]()
                                                {
-            std::cout << "Starting keepalive thread..." << std::endl;
+            spdlog::debug("Starting keepalive thread...");
             
             while (_keepReceiving && _webSocket.is_open())
             {
@@ -153,59 +151,50 @@ namespace deepgram
                     
                     if (ec)
                     {
-                        std::cerr << "Keepalive send error: " << ec.message() << std::endl;
+                        spdlog::error("Keepalive send error: {}", ec.message());
                         break;
                     }
                     
-                    std::cout << "Sent keepalive message" << std::endl;
+                    spdlog::debug("Sent keepalive message");
                 }
                 catch (const std::exception &e)
                 {
-                    std::cerr << "Keepalive error: " << e.what() << std::endl;
+                    spdlog::error("Keepalive error: {}", e.what());
                     break;
                 }
             }
             
-            std::cout << "Keepalive thread ended." << std::endl; });
+            spdlog::debug("Keepalive thread ended"); });
             }
 
-            bool streamAudioFile(const std::vector<uint8_t> &audioData)
+            bool streamAudioFile(const std::vector<uint8_t> &audioData, size_t chunkSize = 4000)
             {
                 if (!connected_ || !_webSocket.is_open())
                 {
-                    std::cerr << "Not connected to Deepgram." << std::endl;
+                    spdlog::error("Not connected to Deepgram.");
                     return false;
                 }
+                spdlog::debug("Streaming {} bytes of audio...", audioData.size());
 
-                std::cout << "Streaming " << audioData.size() << " bytes of audio..." << std::endl;
-
-                const size_t chunkSize = 4000;
                 size_t offset = 0;
-                int chunkNumber = 1;
+                int chunkNumber = 0;
+                int numChunks = audioData.size() / chunkSize;
 
                 while (offset < audioData.size() && _webSocket.is_open())
                 {
                     size_t currentChunkSize = std::min(chunkSize, audioData.size() - offset);
 
-                    std::cout << "Sending chunk " << chunkNumber++ << " (" << currentChunkSize << " bytes)..." << std::endl;
+                    spdlog::debug("Sending chunk: {}/{} -> {} bytes...", ++chunkNumber, numChunks, currentChunkSize);
 
                     if (!sendAudioChunk(audioData.data() + offset, currentChunkSize))
                     {
-                        std::cerr << "Failed to send audio chunk." << std::endl;
+                        spdlog::error("Failed to send audio chunk");
                         return false;
                     }
 
                     offset += currentChunkSize;
-
-                    // Send in real-time: 100ms chunks every 100ms
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 }
-
-                std::cout << "Finished streaming audio data." << std::endl;
-
-                // Send close stream message
-                sendCloseStream();
-
+                spdlog::info("Finished streaming audio data.");
                 return true;
             }
 
@@ -213,7 +202,7 @@ namespace deepgram
             {
                 if (!_webSocket.is_open())
                 {
-                    std::cerr << "websocket not open" << std::endl;
+                    spdlog::error("can't send finalize message, websocket not open");
                     return false;
                 }
                 try
@@ -224,13 +213,13 @@ namespace deepgram
                     _webSocket.write(net::buffer(std::string(control::FINALIZE_MESSAGE)), ec);
                     if (ec)
                     {
-                        std::cerr << "Write error: " << ec.message() << std::endl;
+                        spdlog::error("Write error: {}", ec.message());
                         return false;
                     }
                 }
                 catch (const std::exception &e)
                 {
-                    std::cerr << "sendFinalizeMessage error: " << e.what() << std::endl;
+                    spdlog::error("sendFinalizeMessage error: {}", e.what());
                     return false;
                 }
                 return true;
@@ -240,23 +229,20 @@ namespace deepgram
             {
                 try
                 {
-                    std::cout << "sending chunk...." << std::endl;
                     beast::error_code ec;
                     // Send as binary WebSocket message
                     _webSocket.binary(true);
                     int bytesOut = _webSocket.write(net::buffer(data, size), ec);
-                    std::cout << "*** done sending chunk.... " <<  bytesOut << std::endl;
-
                     if (ec)
                     {
-                        std::cerr << "Write error: " << ec.message() << std::endl;
+                        spdlog::error("Write error: {}", ec.message());
                         return false;
                     }
                     return true;
                 }
                 catch (const std::exception &e)
                 {
-                    std::cerr << "Send chunk error: " << e.what() << std::endl;
+                    spdlog::error("Send chunk error: {}", e.what());
                     return false;
                 }
             }
@@ -272,16 +258,16 @@ namespace deepgram
 
                     if (ec)
                     {
-                        std::cerr << "Error sending close stream: " << ec.message() << std::endl;
+                        spdlog::error("Error sending close stream: {}", ec.message());
                     }
                     else
                     {
-                        std::cout << "Sent close stream message." << std::endl;
+                        spdlog::debug("Sent close stream message.");
                     }
                 }
                 catch (const std::exception &e)
                 {
-                    std::cerr << "Error in sendCloseStream: " << e.what() << std::endl;
+                    spdlog::error("Error in sendCloseStream: {}", e.what());
                 }
             }
 
@@ -292,7 +278,7 @@ namespace deepgram
 
             void close()
             {
-                std::cout << "Closing connection..." << std::endl;
+                spdlog::debug("Closing connection...");
 
                 stopReceiving();
 
@@ -309,12 +295,12 @@ namespace deepgram
                         _webSocket.close(websocket::close_code::normal, ec);
                         if (ec && ec != websocket::error::closed)
                         {
-                            std::cerr << "Close error: " << ec.message() << std::endl;
+                            spdlog::error("Close error: {}", ec.message());
                         }
                     }
                     catch (const std::exception &e)
                     {
-                        std::cerr << "Exception during close: " << e.what() << std::endl;
+                        spdlog::error("Exception during close: {}", e.what());
                     }
                 }
 
@@ -341,7 +327,7 @@ namespace deepgram
                 }
 
                 connected_ = false;
-                std::cout << "Connection closed." << std::endl;
+                spdlog::debug("Connection closed.");
             }
         };
     }
