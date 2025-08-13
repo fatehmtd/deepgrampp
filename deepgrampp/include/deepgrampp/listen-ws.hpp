@@ -95,11 +95,6 @@ namespace deepgram
         private:
             ListenWebsocketClientImpl* websocketClientImpl_ = nullptr;
 
-            std::thread workerThread_;
-            std::thread keepaliveThread_;
-            std::atomic<bool> keepReceiving_;
-            std::atomic<bool> connected_;
-
             PartialTranscriptionCallback onPartialTranscription_ = [](const TranscriptionResult &) {};
             FinalTranscriptionCallback onFinalTranscription_ = [](const TranscriptionResult &) {};
             MetadataCallback onMetadata_ = [](const nlohmann::json &) {};

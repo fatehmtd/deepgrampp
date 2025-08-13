@@ -44,7 +44,6 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 
 # Declare deepgrampp library
 add_library(deepgrampp SHARED
-    #deepgram.cpp
     listen-ws.cpp
     ./include/deepgrampp/listen-ws.hpp
     ./include/deepgrampp/listen.hpp

@@ -24,11 +24,21 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(nlohmann_json)
 
+# fetch SPDLOG for logging
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG "v1.15.0"
+)
+
+FetchContent_MakeAvailable(spdlog)
+
 add_executable(example main.cpp)
 
 target_link_libraries(example
     PRIVATE deepgrampp
     PRIVATE nlohmann_json
+    PRIVATE spdlog::spdlog
 )
 
 install(TARGETS example
