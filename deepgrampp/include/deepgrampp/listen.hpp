@@ -315,7 +315,7 @@ namespace deepgram
             std::optional<int> multichannel;            // Default multichannel
             std::optional<int> endpointing;             // Default endpointing in milliseconds
             std::optional<int> utteranceEndMs;          // Default utterance end timeout in milliseconds
-            std::optional<bool> interimResults;          // Default interim results
+            std::optional<bool> interimResults;         // Default interim results
             std::optional<int> vadEvents;               // Default VAD events
             std::optional<int> diarize;                 // Default diarization
 
@@ -540,6 +540,17 @@ namespace deepgram
                 std::cout << "==========================\n"
                           << std::endl;
             }
+        };
+
+        /**
+         * Result types
+         */
+        namespace result
+        {
+            constexpr const char *RESULTS = "Results";
+            constexpr const char *METADATA = "Metadata";
+            constexpr const char *UTTERANCE_END = "UtteranceEnd";
+            constexpr const char *SPEECH_STARTED = "SpeechStarted";
         };
 
         /**

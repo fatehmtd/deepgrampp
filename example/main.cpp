@@ -4,9 +4,7 @@
 #include <vector>
 #include <spdlog/spdlog.h>
 #include <functional>
-#include "deepgram.hpp"
-#include "listen-ws.hpp"
-#include "speak.hpp"
+#include <deepgrampp/deepgram.hpp>
 
 std::vector<uint8_t> readAudioFile(const std::string &filePath)
 {
@@ -60,15 +58,10 @@ int main()
         }
 
         client.setOnPartialTranscription([](const deepgram::listen::TranscriptionResult &result)
-                                         {
-            spdlog::info("Partial transcription: ");
-            result.print(); });
+                                         { spdlog::info("Partial transcription: {}", result.channel.alternatives[0].transcript); });
 
         client.setOnFinalTranscription([&client](const deepgram::listen::TranscriptionResult &result)
-                                       {
-            client.close();
-            spdlog::info("Final transcription: ");
-            result.print(); });
+                                       { spdlog::info("Final transcription: {}", result.channel.alternatives[0].transcript); });
 
         // Start receiving messages
         client.startReceiving();

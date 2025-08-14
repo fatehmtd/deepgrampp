@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.16)
 
 project(DEEPGRAMPP LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 include(GNUInstallDirs)
 
-find_package(Boost REQUIRED COMPONENTS system json thread REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system thread REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 # Debug: Print Boost information
@@ -42,10 +42,13 @@ FetchContent_MakeAvailable(nlohmann_json)
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${OPENSSL_INCLUDE_DIR})
 
-# Add the executable for the deepgrampp library
-add_executable(deepgrampp
-    deepgram.cpp
+# Declare deepgrampp library
+add_library(deepgrampp SHARED
     listen-ws.cpp
+    ./include/deepgrampp/listen-ws.hpp
+    ./include/deepgrampp/listen.hpp
+    ./include/deepgrampp/speak.hpp
+    ./include/deepgrampp/deepgram.hpp
 )
 
 target_link_libraries(deepgrampp
@@ -54,8 +57,21 @@ target_link_libraries(deepgrampp
     nlohmann_json::nlohmann_json
     Boost::system
     Boost::thread
-    Boost::json
     ${OPENSSL_LIBRARIES}
+)
+
+# Generate export header
+include(GenerateExportHeader)
+generate_export_header(deepgrampp
+    BASE_NAME deepgrampp
+    EXPORT_FILE_NAME deepgrampp_lib_export.h
+)
+
+target_include_directories(deepgrampp PUBLIC
+    $<INSTALL_INTERFACE:include>  # For installed package (optional but good practice)
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> # For direct build
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> # To export the symbols header
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/deepgrampp # to simplify the internal include files
 )
 
 target_compile_features(deepgrampp PRIVATE cxx_std_17)
@@ -67,3 +83,9 @@ elseif(UNIX AND NOT APPLE)
     find_package(Threads REQUIRED)
     target_link_libraries(deepgrampp PRIVATE Threads::Threads)
 endif()
+
+include(GNUInstallDirs)
+install(TARGETS deepgrampp
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
