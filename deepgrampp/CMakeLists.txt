@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(FetchContent)
 include(GNUInstallDirs)
 
-find_package(Boost REQUIRED COMPONENTS system json thread REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system thread REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 # Debug: Print Boost information
@@ -57,7 +57,6 @@ target_link_libraries(deepgrampp
     nlohmann_json::nlohmann_json
     Boost::system
     Boost::thread
-    Boost::json
     ${OPENSSL_LIBRARIES}
 )
 

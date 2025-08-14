@@ -25,127 +25,127 @@ namespace deepgram
                 namespace en
                 {
                     // Filipino accent, Young Adult, Feminine - Engaging, Natural, Cheerful - Casual chat
-                    constexpr char *AMALTHEA = "aura-2-amalthea-en";
+                    constexpr const char *AMALTHEA = "aura-2-amalthea-en";
 
                     // American accent, Adult, Feminine - Casual, Expressive, Comfortable - Customer service, IVR
-                    constexpr char *ANDROMEDA = "aura-2-andromeda-en";
+                    constexpr const char *ANDROMEDA = "aura-2-andromeda-en";
 
                     // American accent, Adult, Masculine - Confident, Comfortable, Casual - Casual chat
-                    constexpr char *APOLLO = "aura-2-apollo-en";
+                    constexpr const char *APOLLO = "aura-2-apollo-en";
 
                     // American accent, Adult, Masculine - Natural, Smooth, Clear, Comfortable - Customer service, casual chat
-                    constexpr char *ARCAS = "aura-2-arcas-en";
+                    constexpr const char *ARCAS = "aura-2-arcas-en";
 
                     // American accent, Adult, Masculine - Warm, Energetic, Caring - Casual chat
-                    constexpr char *ARIES = "aura-2-aries-en";
+                    constexpr const char *ARIES = "aura-2-aries-en";
 
                     // American accent, Adult, Feminine - Clear, Confident, Knowledgeable, Energetic - Advertising
-                    constexpr char *ASTERIA = "aura-2-asteria-en";
+                    constexpr const char *ASTERIA = "aura-2-asteria-en";
 
                     // American accent, Mature, Feminine - Calm, Smooth, Professional - Storytelling
-                    constexpr char *ATHENA = "aura-2-athena-en";
+                    constexpr const char *ATHENA = "aura-2-athena-en";
 
                     // American accent, Mature, Masculine - Enthusiastic, Confident, Approachable, Friendly - Advertising
-                    constexpr char *ATLAS = "aura-2-atlas-en";
+                    constexpr const char *ATLAS = "aura-2-atlas-en";
 
                     // American accent, Adult, Feminine - Cheerful, Expressive, Energetic - Interview
-                    constexpr char *AURORA = "aura-2-aurora-en";
+                    constexpr const char *AURORA = "aura-2-aurora-en";
 
                     // American accent, Adult, Feminine - Clear, Energetic, Professional, Smooth - IVR
-                    constexpr char *CALLISTA = "aura-2-callista-en";
+                    constexpr const char *CALLISTA = "aura-2-callista-en";
 
                     // American accent, Adult, Feminine - Smooth, Melodic, Caring - Storytelling
-                    constexpr char *CORA = "aura-2-cora-en";
+                    constexpr const char *CORA = "aura-2-cora-en";
 
                     // American accent, Young Adult, Feminine - Approachable, Warm, Polite - Storytelling
-                    constexpr char *CORDELIA = "aura-2-cordelia-en";
+                    constexpr const char *CORDELIA = "aura-2-cordelia-en";
 
                     // American accent, Young Adult, Feminine - Casual, Friendly, Cheerful, Breathy - Interview
-                    constexpr char *DELIA = "aura-2-delia-en";
+                    constexpr const char *DELIA = "aura-2-delia-en";
 
                     // British accent, Adult, Masculine - Warm, Approachable, Trustworthy, Baritone - Storytelling
-                    constexpr char *DRACO = "aura-2-draco-en";
+                    constexpr const char *DRACO = "aura-2-draco-en";
 
                     // American accent, Adult, Feminine - Professional, Engaging, Knowledgeable - IVR, advertising, customer service
-                    constexpr char *ELECTRA = "aura-2-electra-en";
+                    constexpr const char *ELECTRA = "aura-2-electra-en";
 
                     // American accent, Adult, Feminine - Empathetic, Clear, Calm, Confident - Customer service
-                    constexpr char *HARMONIA = "aura-2-harmonia-en";
+                    constexpr const char *HARMONIA = "aura-2-harmonia-en";
 
                     // American accent, Adult, Feminine - Caring, Natural, Positive, Friendly, Raspy - IVR, casual chat
-                    constexpr char *HELENA = "aura-2-helena-en";
+                    constexpr const char *HELENA = "aura-2-helena-en";
 
                     // American accent, Adult, Feminine - Smooth, Warm, Professional - Informative
-                    constexpr char *HERA = "aura-2-hera-en";
+                    constexpr const char *HERA = "aura-2-hera-en";
 
                     // American accent, Adult, Masculine - Expressive, Engaging, Professional - Informative
-                    constexpr char *HERMES = "aura-2-hermes-en";
+                    constexpr const char *HERMES = "aura-2-hermes-en";
 
                     // Australian accent, Adult, Masculine - Caring, Warm, Empathetic - Interview
-                    constexpr char *HYPERION = "aura-2-hyperion-en";
+                    constexpr const char *HYPERION = "aura-2-hyperion-en";
 
                     // American accent, Young Adult, Feminine - Cheerful, Positive, Approachable - IVR, advertising, customer service
-                    constexpr char *IRIS = "aura-2-iris-en";
+                    constexpr const char *IRIS = "aura-2-iris-en";
 
                     // American accent, Adult, Feminine - Southern, Smooth, Trustworthy - Storytelling
-                    constexpr char *JANUS = "aura-2-janus-en";
+                    constexpr const char *JANUS = "aura-2-janus-en";
 
                     // American accent, Adult, Feminine - Natural, Engaging, Melodic, Breathy - Interview
-                    constexpr char *JUNO = "aura-2-juno-en";
+                    constexpr const char *JUNO = "aura-2-juno-en";
 
                     // American accent, Adult, Masculine - Expressive, Knowledgeable, Baritone - Informative
-                    constexpr char *JUPITER = "aura-2-jupiter-en";
+                    constexpr const char *JUPITER = "aura-2-jupiter-en";
 
                     // American accent, Young Adult, Feminine - Friendly, Natural, Engaging - IVR
-                    constexpr char *LUNA = "aura-2-luna-en";
+                    constexpr const char *LUNA = "aura-2-luna-en";
 
                     // American accent, Adult, Masculine - Smooth, Patient, Trustworthy, Baritone - Customer service
-                    constexpr char *MARS = "aura-2-mars-en";
+                    constexpr const char *MARS = "aura-2-mars-en";
 
                     // American accent, Adult, Feminine - Positive, Friendly, Natural - Storytelling
-                    constexpr char *MINERVA = "aura-2-minerva-en";
+                    constexpr const char *MINERVA = "aura-2-minerva-en";
 
                     // American accent, Adult, Masculine - Professional, Patient, Polite - Customer service
-                    constexpr char *NEPTUNE = "aura-2-neptune-en";
+                    constexpr const char *NEPTUNE = "aura-2-neptune-en";
 
                     // American accent, Adult, Masculine - Calm, Smooth, Comfortable, Professional - Advertising
-                    constexpr char *ODYSSEUS = "aura-2-odysseus-en";
+                    constexpr const char *ODYSSEUS = "aura-2-odysseus-en";
 
                     // American accent, Adult, Feminine - Expressive, Enthusiastic, Cheerful - Interview
-                    constexpr char *OPHELIA = "aura-2-ophelia-en";
+                    constexpr const char *OPHELIA = "aura-2-ophelia-en";
 
                     // American accent, Adult, Masculine - Approachable, Comfortable, Calm, Polite - Informative
-                    constexpr char *ORION = "aura-2-orion-en";
+                    constexpr const char *ORION = "aura-2-orion-en";
 
                     // American accent, Adult, Masculine - Professional, Clear, Confident, Trustworthy - Customer service, storytelling
-                    constexpr char *ORPHEUS = "aura-2-orpheus-en";
+                    constexpr const char *ORPHEUS = "aura-2-orpheus-en";
 
                     // British accent, Adult, Feminine - Smooth, Calm, Melodic, Breathy - IVR, informative
-                    constexpr char *PANDORA = "aura-2-pandora-en";
+                    constexpr const char *PANDORA = "aura-2-pandora-en";
 
                     // American accent, Adult, Feminine - Energetic, Warm, Casual - Customer service
-                    constexpr char *PHOEBE = "aura-2-phoebe-en";
+                    constexpr const char *PHOEBE = "aura-2-phoebe-en";
 
                     // American accent, Adult, Masculine - Smooth, Calm, Empathetic, Baritone - Interview, storytelling
-                    constexpr char *PLUTO = "aura-2-pluto-en";
+                    constexpr const char *PLUTO = "aura-2-pluto-en";
 
                     // American accent, Adult, Masculine - Knowledgeable, Confident, Baritone - Customer service
-                    constexpr char *SATURN = "aura-2-saturn-en";
+                    constexpr const char *SATURN = "aura-2-saturn-en";
 
                     // American accent, Adult, Feminine - Expressive, Engaging, Energetic - Informative
-                    constexpr char *SELENE = "aura-2-selene-en";
+                    constexpr const char *SELENE = "aura-2-selene-en";
 
                     // American accent, Adult, Feminine - Clear, Confident, Energetic, Enthusiastic - Casual chat, customer service, IVR
-                    constexpr char *THALIA = "aura-2-thalia-en";
+                    constexpr const char *THALIA = "aura-2-thalia-en";
 
                     // Australian accent, Adult, Feminine - Expressive, Polite, Sincere - Informative
-                    constexpr char *THEIA = "aura-2-theia-en";
+                    constexpr const char *THEIA = "aura-2-theia-en";
 
                     // American accent, Adult, Feminine - Natural, Expressive, Patient, Empathetic - Customer service, interview, storytelling
-                    constexpr char *VESTA = "aura-2-vesta-en";
+                    constexpr const char *VESTA = "aura-2-vesta-en";
 
                     // American accent, Adult, Masculine - Deep, Trustworthy, Smooth - IVR
-                    constexpr char *ZEUS = "aura-2-zeus-en";
+                    constexpr const char *ZEUS = "aura-2-zeus-en";
                 }
 
                 /**
@@ -156,34 +156,34 @@ namespace deepgram
                 namespace es
                 {
                     // Peninsular accent, Adult, Masculine - Calm, Professional, Clear, Knowledgeable, Approachable - Interview, Customer Service
-                    constexpr char *ALVARO = "aura-2-alvaro-es";
+                    constexpr const char *ALVARO = "aura-2-alvaro-es";
 
                     // Latin American accent, Adult, Masculine (Codeswitching) - Expressive, Enthusiastic, Confident, Casual, Comfortable - Casual Chat, Informative
-                    constexpr char *AQUILA = "aura-2-aquila-es";
+                    constexpr const char *AQUILA = "aura-2-aquila-es";
 
                     // Peninsular accent, Adult, Feminine (Codeswitching) - Professional, Raspy, Energetic, Breathy, Confident - Interview, Customer Service, IVR
-                    constexpr char *CARINA = "aura-2-carina-es";
+                    constexpr const char *CARINA = "aura-2-carina-es";
 
                     // Colombian accent, Young Adult, Feminine - Clear, Energetic, Positive, Friendly, Enthusiastic - Casual Chat, Advertising, IVR
-                    constexpr char *CELESTE = "aura-2-celeste-es";
+                    constexpr const char *CELESTE = "aura-2-celeste-es";
 
                     // Peninsular accent, Adult, Feminine (Codeswitching) - Professional, Confident, Expressive, Polite, Knowledgeable - Storytelling, Advertising
-                    constexpr char *DIANA = "aura-2-diana-es";
+                    constexpr const char *DIANA = "aura-2-diana-es";
 
                     // Mexican accent, Mature, Feminine - Approachable, Natural, Calm, Comfortable, Expressive - Casual Chat, Interview
-                    constexpr char *ESTRELLA = "aura-2-estrella-es";
+                    constexpr const char *ESTRELLA = "aura-2-estrella-es";
 
                     // Latin American accent, Adult, Masculine (Codeswitching) - Approachable, Professional, Friendly, Comfortable, Calm - Casual Chat, IVR, Storytelling
-                    constexpr char *JAVIER = "aura-2-javier-es";
+                    constexpr const char *JAVIER = "aura-2-javier-es";
 
                     // Peninsular accent, Adult, Masculine - Calm, Professional, Approachable, Clear, Confident - Casual Chat, Customer Service
-                    constexpr char *NESTOR = "aura-2-nestor-es";
+                    constexpr const char *NESTOR = "aura-2-nestor-es";
 
                     // Latin American accent, Young Adult, Feminine (Codeswitching) - Approachable, Casual, Friendly, Calm, Positive - Customer Service, Informative
-                    constexpr char *SELENA = "aura-2-selena-es";
+                    constexpr const char *SELENA = "aura-2-selena-es";
 
                     // Mexican accent, Adult, Masculine - Calm, Professional, Comfortable, Empathetic, Baritone - Casual Chat, Interview
-                    constexpr char *SIRIO = "aura-2-sirio-es";
+                    constexpr const char *SIRIO = "aura-2-sirio-es";
                 }
             }
 
@@ -196,40 +196,40 @@ namespace deepgram
                 namespace en
                 {
                     // Irish accent, Adult, Masculine - Warm, Friendly, Natural - Storytelling
-                    constexpr char *ANGUS = "aura-angus-en";
+                    constexpr const char *ANGUS = "aura-angus-en";
 
                     // American accent, Adult, Masculine - Natural, Smooth, Clear, Comfortable - Customer service, casual chat
-                    constexpr char *ARCAS = "aura-arcas-en";
+                    constexpr const char *ARCAS = "aura-arcas-en";
 
                     // American accent, Adult, Feminine - Clear, Confident, Knowledgeable, Energetic - Advertising (Default voice)
-                    constexpr char *ASTERIA = "aura-asteria-en";
+                    constexpr const char *ASTERIA = "aura-asteria-en";
 
                     // British accent, Mature, Feminine - Calm, Smooth, Professional - Storytelling
-                    constexpr char *ATHENA = "aura-athena-en";
+                    constexpr const char *ATHENA = "aura-athena-en";
 
                     // British accent, Adult, Masculine - Professional, Clear, Confident - Customer service
-                    constexpr char *HELIOS = "aura-helios-en";
+                    constexpr const char *HELIOS = "aura-helios-en";
 
                     // American accent, Adult, Feminine - Smooth, Warm, Professional - Informative
-                    constexpr char *HERA = "aura-hera-en";
+                    constexpr const char *HERA = "aura-hera-en";
 
                     // American accent, Young Adult, Feminine - Friendly, Natural, Engaging - IVR
-                    constexpr char *LUNA = "aura-luna-en";
+                    constexpr const char *LUNA = "aura-luna-en";
 
                     // American accent, Adult, Masculine - Approachable, Comfortable, Calm, Polite - Informative
-                    constexpr char *ORION = "aura-orion-en";
+                    constexpr const char *ORION = "aura-orion-en";
 
                     // American accent, Adult, Masculine - Professional, Clear, Confident, Trustworthy - Customer service, storytelling
-                    constexpr char *ORPHEUS = "aura-orpheus-en";
+                    constexpr const char *ORPHEUS = "aura-orpheus-en";
 
                     // American accent, Adult, Masculine - Confident, Professional, Clear - Customer service
-                    constexpr char *PERSEUS = "aura-perseus-en";
+                    constexpr const char *PERSEUS = "aura-perseus-en";
 
                     // American accent, Adult, Feminine - Clear, Professional, Engaging - Customer service
-                    constexpr char *STELLA = "aura-stella-en";
+                    constexpr const char *STELLA = "aura-stella-en";
 
                     // American accent, Adult, Masculine - Deep, Trustworthy, Smooth - IVR
-                    constexpr char *ZEUS = "aura-zeus-en";
+                    constexpr const char *ZEUS = "aura-zeus-en";
                 }
             }
 
@@ -239,20 +239,20 @@ namespace deepgram
                 namespace en
                 {
                     // Top English voices recommended by Deepgram for their versatility and quality
-                    constexpr char *THALIA = aura_2::en::THALIA;       // Clear, Confident, Energetic
-                    constexpr char *ANDROMEDA = aura_2::en::ANDROMEDA; // Casual, Expressive
-                    constexpr char *HELENA = aura_2::en::HELENA;       // Caring, Natural, Positive
-                    constexpr char *APOLLO = aura_2::en::APOLLO;       // Confident, Comfortable
-                    constexpr char *ARCAS = aura_2::en::ARCAS;         // Natural, Smooth, Clear
-                    constexpr char *ARIES = aura_2::en::ARIES;         // Warm, Energetic
+                    constexpr const char *THALIA = aura_2::en::THALIA;       // Clear, Confident, Energetic
+                    constexpr const char *ANDROMEDA = aura_2::en::ANDROMEDA; // Casual, Expressive
+                    constexpr const char *HELENA = aura_2::en::HELENA;       // Caring, Natural, Positive
+                    constexpr const char *APOLLO = aura_2::en::APOLLO;       // Confident, Comfortable
+                    constexpr const char *ARCAS = aura_2::en::ARCAS;         // Natural, Smooth, Clear
+                    constexpr const char *ARIES = aura_2::en::ARIES;         // Warm, Energetic
                 }
 
                 namespace es
                 {
                     // Top Spanish voices recommended by Deepgram
-                    constexpr char *CELESTE = aura_2::es::CELESTE;   // Clear, Energetic, Positive
-                    constexpr char *ESTRELLA = aura_2::es::ESTRELLA; // Approachable, Natural, Calm
-                    constexpr char *NESTOR = aura_2::es::NESTOR;     // Calm, Professional
+                    constexpr const char *CELESTE = aura_2::es::CELESTE;   // Clear, Energetic, Positive
+                    constexpr const char *ESTRELLA = aura_2::es::ESTRELLA; // Approachable, Natural, Calm
+                    constexpr const char *NESTOR = aura_2::es::NESTOR;     // Calm, Professional
                 }
             }
         }
@@ -265,21 +265,21 @@ namespace deepgram
         namespace encoding
         {
             // 16-bit, little-endian, signed PCM WAV data.	REST ,Streaming
-            constexpr char *LINEAR16 = "linear16";
+            constexpr const char *LINEAR16 = "linear16";
             // Mu-law encoded WAV data.	REST ,Streaming
-            constexpr char *MULAW = "mulaw";
+            constexpr const char *MULAW = "mulaw";
             // A-law encoded WAV data.	REST ,Streaming
-            constexpr char *ALAW = "alaw";
+            constexpr const char *ALAW = "alaw";
             // 32-bit, little-endian, floating-point PCM WAV data.	REST ,Streaming
-            constexpr char *LINEAR32 = "linear32";
+            constexpr const char *LINEAR32 = "linear32";
             // Free Lossless Audio Codec (FLAC) encoded data.	REST ,Streaming
-            constexpr char *FLAC = "flac";
+            constexpr const char *FLAC = "flac";
             // Ogg Opus codec.	REST ,Streaming
-            constexpr char *OPUS = "opus";
+            constexpr const char *OPUS = "opus";
             // Advanced Audio Coding format
-            constexpr char *AAC = "aac";
+            constexpr const char *AAC = "aac";
             // MP3 audio compression format.	REST
-            constexpr char *MP3 = "mp3";
+            constexpr const char *MP3 = "mp3";
         }
 
         /**
