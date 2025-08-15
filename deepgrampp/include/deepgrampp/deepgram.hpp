@@ -1,6 +1,6 @@
 #pragma once
 
-#include "speak.hpp"
+#include "speak-ws.hpp"
 #include "listen-ws.hpp"
 
 namespace deepgram

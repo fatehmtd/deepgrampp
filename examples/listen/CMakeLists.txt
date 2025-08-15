@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(example VERSION 1.0)
+project(listen VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -33,15 +33,20 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(spdlog)
 
-add_executable(example main.cpp)
+add_executable(listen main.cpp)
 
-target_link_libraries(example
+target_link_libraries(listen
     PRIVATE deepgrampp
     PRIVATE nlohmann_json
     PRIVATE spdlog::spdlog
 )
 
-install(TARGETS example
+install(TARGETS listen
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# copy the sample audio file
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/sample_speech.raw
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/deepgrampp
 )
