@@ -27,21 +27,20 @@ std::vector<uint8_t> readAudioFile(const std::string &filePath)
     return buffer;
 }
 
-int main()
+int testListen(const char *apiKey, const std::string& audioFilePath)
 {
     try
     {
         // Read the audio file
-        std::cout << "Reading audio file..." << std::endl;
-        auto audioData = readAudioFile("/Users/fateh/Documents/recording.raw");
+        spdlog::info("Reading audio file... {}", audioFilePath);
+        auto audioData = readAudioFile(audioFilePath);
 
         if (audioData.empty())
         {
-            std::cerr << "Error: Audio file is empty." << std::endl;
+            spdlog::error("Error: Audio file is empty.");
             return EXIT_FAILURE;
         }
 
-        constexpr const char *apiKey = "da3313d72d69f139a4d19f1b19fd0848ab22fdfa";
         // Create and connect the client
         deepgram::listen::ListenWebsocketClient client("api.deepgram.com", apiKey);
 
@@ -53,7 +52,7 @@ int main()
 
         if (!client.connect(options))
         {
-            std::cerr << "Failed to connect to Deepgram." << std::endl;
+            spdlog::error("Failed to connect to Deepgram.");
             return EXIT_FAILURE;
         }
 
@@ -67,26 +66,33 @@ int main()
         client.startReceiving();
 
         // Wait for connection to stabilize and receive metadata
-        std::cout << "Waiting for metadata..." << std::endl;
+        spdlog::info("Waiting for metadata...");
         std::this_thread::sleep_for(std::chrono::seconds(2));
 
         // Stream the audio file
         if (!client.streamAudioFile(audioData))
         {
-            std::cerr << "Failed to stream audio file." << std::endl;
+            spdlog::error("Failed to stream audio file.");
             return EXIT_FAILURE;
         }
 
         // Wait for final transcription results
-        std::cout << "Waiting for final results..." << std::endl;
+        spdlog::info("Waiting for final results...");
         std::this_thread::sleep_for(std::chrono::seconds(5));
 
-        std::cout << "Transcription complete!" << std::endl;
+        spdlog::info("Transcription complete!");
         return EXIT_SUCCESS;
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Error: " << e.what() << std::endl;
+        spdlog::error("Error: {}", e.what());
         return EXIT_FAILURE;
     }
+}
+
+int main()
+{
+    constexpr const char *apiKey = "da3313d72d69f139a4d19f1b19fd0848ab22fdfa";
+    testListen(apiKey, "sample_speech.raw");
+    return 0;
 }

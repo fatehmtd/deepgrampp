@@ -45,9 +45,11 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 # Declare deepgrampp library
 add_library(deepgrampp SHARED
     listen-ws.cpp
+    speak-ws.cpp
     ./include/deepgrampp/listen-ws.hpp
     ./include/deepgrampp/listen.hpp
     ./include/deepgrampp/speak.hpp
+    ./include/deepgrampp/speak-ws.hpp
     ./include/deepgrampp/deepgram.hpp
 )
 
@@ -85,7 +87,15 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 include(GNUInstallDirs)
+
+# Install the library
 install(TARGETS deepgrampp
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# Install headers
+install(DIRECTORY include/deepgrampp/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/deepgrampp
+    FILES_MATCHING PATTERN "*.hpp"
 )

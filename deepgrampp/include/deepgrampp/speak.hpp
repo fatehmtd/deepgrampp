@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <optional>
+#include <sstream>
+#include <nlohmann/json.hpp>
 
 // Deepgram C++ SDK - Speak Module
 // Provides access to Deepgram's text-to-speech capabilities
@@ -265,13 +267,13 @@ namespace deepgram
         namespace encoding
         {
             // 16-bit, little-endian, signed PCM WAV data.	REST ,Streaming
-            constexpr const char *LINEAR16 = "linear16";
+            constexpr const char *LINEAR_16 = "linear16";
             // Mu-law encoded WAV data.	REST ,Streaming
             constexpr const char *MULAW = "mulaw";
             // A-law encoded WAV data.	REST ,Streaming
             constexpr const char *ALAW = "alaw";
             // 32-bit, little-endian, floating-point PCM WAV data.	REST ,Streaming
-            constexpr const char *LINEAR32 = "linear32";
+            constexpr const char *LINEAR_32 = "linear32";
             // Free Lossless Audio Codec (FLAC) encoded data.	REST ,Streaming
             constexpr const char *FLAC = "flac";
             // Ogg Opus codec.	REST ,Streaming
@@ -291,10 +293,150 @@ namespace deepgram
         struct LiveSpeakConfig
         {
             std::string model = models::aura_2::en::THALIA; // Default model
-            std::string encoding = encoding::LINEAR16;      // Encoding type, e.g., "linear16", "opus"
-            std::optional<int> sample_rate = 16000;         // Sample rate in Hz, default is 16000
+            std::string encoding = encoding::LINEAR_16;      // Encoding type, e.g., "linear16", "opus"
+            std::optional<int> sampleRate = 16000;         // Sample rate in Hz, default is 16000
             std::optional<int> bitrate;                     // Bitrate in bits per second
             std::optional<std::string> container;           // Container format, e.g., "wav", "ogg"
+            std::optional<bool> mip_opt_out;
+
+            std::string toQueryString(const std::string& prefix = "/v1/speak") const {
+                std::ostringstream oss;
+                oss << prefix
+                << "?"
+                << "model=" << model
+                << "&encoding=" << encoding;
+                if(sampleRate.has_value()) {
+                    oss << "&sample_rate=" << sampleRate.value();
+                }
+                if(mip_opt_out.has_value()) {
+                    oss << "&mip_opt_out=" << (mip_opt_out.value() ? "true" : "false");
+                }
+                return oss.str();
+            }
+        };
+
+        /**
+         * SpeakControl
+         * Represents the control information sent to the server.
+         */
+        namespace control
+        {
+            // Flush control message
+            constexpr const char *FLUSH = R"({"type" : "Flush"})";
+            // Clear control message
+            constexpr const char *CLEAR = R"({"type" : "Clear"})";
+            // Close control message
+            constexpr const char *CLOSE = R"({"type" : "Close"})";
+        };
+
+        /**
+         * SpeakControlResponse
+         * Represents the control response information returned by the server.
+         */
+        struct SpeakControlResponse
+        {
+            std::string type;
+            std::optional<int> sequenceId;
+
+            static SpeakControlResponse fromJson(const nlohmann::json &j)
+            {
+                SpeakControlResponse response;
+                j.at("type").get_to(response.type);
+                if (j.contains("sequenceId"))
+                {
+                    response.sequenceId = j.at("sequenceId").get<int>();
+                }
+                return response;
+            }
+
+            std::string toString() const {
+                std::ostringstream oss;
+                oss << "SpeakControlResponse {"
+                    << " type: " << type;
+                if (sequenceId) {
+                    oss << ", sequenceId: " << *sequenceId;
+                }
+                oss << " }";
+                return oss.str();
+            }
+        };
+
+        /**
+         * SpeakCloseFrame
+         * Represents the close frame information returned by the server.
+         */
+        struct SpeakCloseFrame
+        {
+            std::string code;
+            std::string payload;
+
+            static SpeakCloseFrame fromJson(const nlohmann::json &j)
+            {
+                SpeakCloseFrame frame;
+                j.at("code").get_to(frame.code);
+                j.at("payload").get_to(frame.payload);
+                return frame;
+            }
+
+            std::string toString() const {
+                std::ostringstream oss;
+                oss << "SpeakCloseFrame {"
+                    << " code: " << code
+                    << ", payload: " << payload
+                    << " }";
+                return oss.str();
+            }
+        };
+
+        /**
+         * MetadataResponse
+         * Represents the metadata information returned by the server.
+         */
+        struct MetadataResponse 
+        {
+            std::string type;
+            std::optional<std::string> request_id;
+            std::optional<std::string> model_name;
+            std::optional<std::string> model_version;
+            std::optional<std::string> model_uuid;
+
+            static MetadataResponse fromJson(const nlohmann::json &j) {
+                MetadataResponse response;
+                j.at("type").get_to(response.type);
+                if (j.contains("request_id")) {
+                    response.request_id = j.at("request_id").get<std::string>();
+                }
+                if (j.contains("model_name")) {
+                    response.model_name = j.at("model_name").get<std::string>();
+                }
+                if (j.contains("model_version")) {
+                    response.model_version = j.at("model_version").get<std::string>();
+                }
+                if (j.contains("model_uuid")) {
+                    response.model_uuid = j.at("model_uuid").get<std::string>();
+                }
+                return response;
+            }
+
+            std::string toString() const {
+                std::ostringstream oss;
+                oss << "MetadataResponse {"
+                    << " type: " << type;
+                if (request_id) {
+                    oss << ", request_id: " << *request_id;
+                }
+                if (model_name) {
+                    oss << ", model_name: " << *model_name;
+                }
+                if (model_version) {
+                    oss << ", model_version: " << *model_version;
+                }
+                if (model_uuid) {
+                    oss << ", model_uuid: " << *model_uuid;
+                }
+                oss << " }";
+                return oss.str();
+            }
         };
     }
 } // namespace deepgram

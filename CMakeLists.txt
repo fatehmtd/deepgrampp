@@ -10,4 +10,4 @@ include(GNUInstallDirs)
 
 
 add_subdirectory(deepgrampp)
-add_subdirectory(example)
+add_subdirectory(examples)
