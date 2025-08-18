@@ -8,7 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(FetchContent)
 include(GNUInstallDirs)
 
-find_package(Boost REQUIRED COMPONENTS system thread REQUIRED)
+# Modern CMake: Use Boost's imported targets and avoid FindBoost
+find_package(Boost REQUIRED COMPONENTS system thread CONFIG)
 find_package(OpenSSL REQUIRED)
 
 # Debug: Print Boost information
