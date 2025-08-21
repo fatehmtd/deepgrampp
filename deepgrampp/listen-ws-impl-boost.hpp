@@ -10,6 +10,11 @@
 #include <boost/beast/http.hpp>
 #include <functional>
 #include <spdlog/spdlog.h>
+#include <string>
+#include <iostream>
+#include <thread>
+#include <chrono>
+#include <atomic>
 
 using namespace boost;
 using namespace boost::beast;

@@ -48,25 +48,25 @@ namespace deepgram
              * Sends a text message to the WebSocket.
              * This method sends a text message to the Deepgram WebSocket server for processing.
              */
-            void speak(const std::string &text);
+            bool speak(const std::string &text);
 
             /**
              * Sends a flush message to the WebSocket.
              * This method sends a flush message to the Deepgram WebSocket server.
              */
-            void sendFlushMessage();
+            bool sendFlushMessage();
 
             /**
              * Sends a clear message to the WebSocket.
              * This method sends a clear message to the Deepgram WebSocket server.
              */
-            void sendClearMessage();
+            bool sendClearMessage();
 
             /**
              * Sends a close message to the WebSocket.
              * This method sends a close message to the Deepgram WebSocket server.
              */
-            void sendCloseMessage();
+            bool sendCloseMessage();
 
             using SpeechResultCallback = std::function<void(const char *, int)>;
             using SpeechControlResponseCallback = std::function<void(const SpeakControlResponse &)>;

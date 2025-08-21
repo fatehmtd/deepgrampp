@@ -4,12 +4,9 @@
 #include "listen.hpp"
 #include "deepgram.hpp"
 
-#include <string>
-#include <iostream>
-#include <thread>
-#include <chrono>
-#include <atomic>
 #include <nlohmann/json.hpp>
+
+#include <memory>
 
 namespace deepgram
 {
@@ -93,7 +90,7 @@ namespace deepgram
             void handleResponse(const std::string &message);
 
         private:
-            ListenWebsocketClientImpl* websocketClientImpl_ = nullptr;
+            std::unique_ptr<ListenWebsocketClientImpl> websocketClientImpl_;
 
             PartialTranscriptionCallback onPartialTranscription_ = [](const TranscriptionResult &) {};
             FinalTranscriptionCallback onFinalTranscription_ = [](const TranscriptionResult &) {};

@@ -61,43 +61,47 @@ void deepgram::speak::SpeakWebsocketClient::startReceiving()
     }
 }
 
-void deepgram::speak::SpeakWebsocketClient::speak(const std::string &text)
+bool deepgram::speak::SpeakWebsocketClient::speak(const std::string &text)
 {
     if (_speakWebsocketClientImpl && _speakWebsocketClientImpl->isConnected()) {
         nlohmann::json speakMessage = {
             {"type", "Speak"},
             {"text", text}
         };
-        _speakWebsocketClientImpl->sendPayload(speakMessage.dump());
+        return _speakWebsocketClientImpl->sendPayload(speakMessage.dump());
     } else {
         spdlog::error("can't send text, SpeakWebsocketClientImpl is not initialized");
+        return false;
     }
 }
 
-void deepgram::speak::SpeakWebsocketClient::sendFlushMessage()
+bool deepgram::speak::SpeakWebsocketClient::sendFlushMessage()
 {
     if(_speakWebsocketClientImpl && _speakWebsocketClientImpl->isConnected()) {
-        _speakWebsocketClientImpl->sendPayload(speak::control::FLUSH);
+        return _speakWebsocketClientImpl->sendPayload(speak::control::FLUSH);
     } else {
         spdlog::error("can't send flush message, SpeakWebsocketClientImpl is not initialized");
+        return false;
     }
 }
 
-void deepgram::speak::SpeakWebsocketClient::sendClearMessage()
+bool deepgram::speak::SpeakWebsocketClient::sendClearMessage()
 {
     if (_speakWebsocketClientImpl && _speakWebsocketClientImpl->isConnected()) {
-        _speakWebsocketClientImpl->sendPayload(speak::control::CLEAR);
+        return _speakWebsocketClientImpl->sendPayload(speak::control::CLEAR);
     } else {
         spdlog::error("can't send clear message, SpeakWebsocketClientImpl is not initialized");
+        return false;   
     }
 }
 
-void deepgram::speak::SpeakWebsocketClient::sendCloseMessage()
+bool deepgram::speak::SpeakWebsocketClient::sendCloseMessage()
 {
     if (_speakWebsocketClientImpl && _speakWebsocketClientImpl->isConnected()) {
-        _speakWebsocketClientImpl->sendPayload(speak::control::CLOSE);
+        return _speakWebsocketClientImpl->sendPayload(speak::control::CLOSE);
     } else {
         spdlog::error("can't send close message, SpeakWebsocketClientImpl is not initialized");
+        return false;
     }
 }
 
