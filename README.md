@@ -2,7 +2,6 @@
 
 **deepgrampp** is an independent, community-driven C++ SDK for Deepgram’s Speech-to-Text (transcription) and Text-to-Speech (synthesis) APIs. It offers real-time streaming capabilities, straightforward integration, and modern C++.
 
-
 ## Features
 
 - Real-time speech recognition (transcription) via Deepgram WebSocket API
@@ -47,7 +46,7 @@ See [examples/speak/main.cpp](examples/speak/main.cpp):
 #include <deepgrampp/deepgram.hpp>
 
 int main() {
-    deepgram::speak::SpeakWebsocketClient client("api.deepgram.com", "YOUR_API_KEY");
+    deepgram::speak::SpeakWebsocketClient client("YOUR_API_KEY");
     deepgram::speak::LiveSpeakConfig config({
         .model = deepgram::speak::models::featured::en::APOLLO,
         .sampleRate = 16000,
@@ -74,7 +73,9 @@ See [examples/listen/main.cpp](examples/listen/main.cpp):
 #include <deepgrampp/deepgram.hpp>
 
 int main() {
-    deepgram::listen::ListenWebsocketClient client("api.deepgram.com", "YOUR_API_KEY");
+    deepgram::listen::ListenWebsocketClient client("YOUR_API_KEY");
+
+    // options for the transcription process
     deepgram::listen::LiveTranscriptionOptions options({
         .model = deepgram::listen::models::nova_3::GENERAL,
         .language = deepgram::listen::languages::nova_3::MULTILINGUAL,
@@ -82,19 +83,35 @@ int main() {
         .encoding = deepgram::listen::encoding::LINEAR_16,
         .interimResults = true
     });
+
+    // attempt to connect to the deepgram api
     if (!client.connect(options)) return 1;
+
+    // retrieve the data from any audio source, make sure it corresponds to the LiveTranscriptionOptions you're using.
+    std::vector<uint8_t> audioData = readAudioData(); 
+
     client.setOnPartialTranscription([](const deepgram::listen::TranscriptionResult &result) {
         // handle partial transcript
     });
     client.setOnFinalTranscription([](const deepgram::listen::TranscriptionResult &result) {
         // handle final transcript
     });
+
+    // start the data reception thread
     client.startReceiving();
-    // stream audio data...
+
+    // stream the audio data, this is an async function
+    client.streamAudio(audioData);
+
+    /**
+     * your blocking logic goes here...
+     */ 
+
+    // close the client once done.
     client.close();
     return 0;
 }
-``` 
+```
 
 ## Project Structure
 
@@ -117,7 +134,7 @@ Pull requests and issues are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.
 - [x] Logging via spdlog
 - [x] JSON parsing via nlohmann/json
 - [x] CMake build system
-- [x] Example applications for transcription and synthesis
+- [x] Example applications for transcription and voice synthesis
 - [ ] Provide alternatives to **Boost.Asio** for WebSocket streaming
 - [ ] Support Deepgram REST API in addition to WebSocket streaming
 - [ ] Improve error handling and reporting

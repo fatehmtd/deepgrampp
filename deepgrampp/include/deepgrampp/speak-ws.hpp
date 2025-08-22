@@ -21,7 +21,7 @@ namespace deepgram
         class DEEPGRAMPP_EXPORT SpeakWebsocketClient
         {
         public:
-            SpeakWebsocketClient(const std::string &host, const std::string &apiKey, const std::string &port = "443");
+            SpeakWebsocketClient(const std::string &apiKey);
             ~SpeakWebsocketClient();
 
             /**

@@ -39,7 +39,7 @@ namespace deepgram
              * This constructor initializes the WebSocket client with the provided host, API key, and port.
              * It sets up the SSL context and prepares the WebSocket stream for communication.
              */
-            ListenWebsocketClient(const std::string &host, const std::string &apiKey, const std::string &port = "443");
+            ListenWebsocketClient(const std::string &apiKey);
             ~ListenWebsocketClient();
 
             /**
@@ -57,7 +57,7 @@ namespace deepgram
 
             void startReceiving();
             void startKeepalive();
-            bool streamAudioFile(const std::vector<uint8_t> &audioData);
+            bool streamAudio(const std::vector<uint8_t> &audioData, int chunkSize=4096);
 
             /**
              * Use the Finalize message to flush the WebSocket stream.

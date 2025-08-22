@@ -9,7 +9,7 @@
 
 int testSpeak(const char* apiKey) {
     try {
-        deepgram::speak::SpeakWebsocketClient client("api.deepgram.com", apiKey);
+        deepgram::speak::SpeakWebsocketClient client(apiKey);
         deepgram::speak::LiveSpeakConfig config({
             .model = deepgram::speak::models::featured::en::THALIA,
             .sampleRate = 16000,
@@ -59,7 +59,7 @@ int testSpeak(const char* apiKey) {
 
 int main()
 {
-    constexpr const char *apiKey = "da3313d72d69f139a4d19f1b19fd0848ab22fdfa";
+    constexpr const char *apiKey = "API_KEY";
     testSpeak(apiKey);
     return 0;
 }

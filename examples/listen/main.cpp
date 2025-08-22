@@ -42,7 +42,7 @@ int testListen(const char *apiKey, const std::string& audioFilePath)
         }
 
         // Create and connect the client
-        deepgram::listen::ListenWebsocketClient client("api.deepgram.com", apiKey);
+        deepgram::listen::ListenWebsocketClient client(apiKey);
 
         deepgram::listen::LiveTranscriptionOptions options({.model = deepgram::listen::models::nova_3::GENERAL,
                                                             .language = deepgram::listen::languages::nova_3::MULTILINGUAL,
@@ -70,7 +70,7 @@ int testListen(const char *apiKey, const std::string& audioFilePath)
         std::this_thread::sleep_for(std::chrono::seconds(2));
 
         // Stream the audio file
-        if (!client.streamAudioFile(audioData))
+        if (!client.streamAudio(audioData))
         {
             spdlog::error("Failed to stream audio file.");
             return EXIT_FAILURE;
@@ -92,7 +92,7 @@ int testListen(const char *apiKey, const std::string& audioFilePath)
 
 int main()
 {
-    constexpr const char *apiKey = "da3313d72d69f139a4d19f1b19fd0848ab22fdfa";
+    constexpr const char *apiKey = "API_KEY";
     testListen(apiKey, "sample_speech.raw");
     return 0;
 }

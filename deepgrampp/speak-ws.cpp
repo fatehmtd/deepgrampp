@@ -3,9 +3,9 @@
 #include <nlohmann/json.hpp>
 #include "speak-ws.hpp"
 
-deepgram::speak::SpeakWebsocketClient::SpeakWebsocketClient(const std::string &host, const std::string &apiKey, const std::string &port)
+deepgram::speak::SpeakWebsocketClient::SpeakWebsocketClient(const std::string &apiKey)
 {
-    _speakWebsocketClientImpl = std::make_unique<SpeakWebsocketClientImpl>(host, apiKey, port);
+    _speakWebsocketClientImpl = std::make_unique<SpeakWebsocketClientImpl>("api.deepgram.com", apiKey, "443");
 }
 
 deepgram::speak::SpeakWebsocketClient::~SpeakWebsocketClient()

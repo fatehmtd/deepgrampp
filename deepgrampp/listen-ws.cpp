@@ -13,11 +13,9 @@ using tcp = net::ip::tcp;
 
 using Websocket = websocket::stream<ssl::stream<tcp::socket>>;
 
-ListenWebsocketClient::ListenWebsocketClient(const std::string &host,
-                                             const std::string &apiKey,
-                                             const std::string &port)
+ListenWebsocketClient::ListenWebsocketClient(const std::string &apiKey)
 {
-    websocketClientImpl_ = std::make_unique<ListenWebsocketClientImpl>(host, apiKey, port);
+    websocketClientImpl_ = std::make_unique<ListenWebsocketClientImpl>("api.deepgram.com", apiKey, "443");
 }
 
 ListenWebsocketClient::~ListenWebsocketClient()
@@ -54,13 +52,13 @@ void ListenWebsocketClient::startKeepalive()
     websocketClientImpl_->startKeepalive();
 }
 
-bool ListenWebsocketClient::streamAudioFile(const std::vector<uint8_t> &audioData)
+bool ListenWebsocketClient::streamAudio(const std::vector<uint8_t> &audioData, int chunkSize)
 {
     if (!websocketClientImpl_) {
         spdlog::error("can't stream audio file, websocketClientImpl_ is not initialized");
         return false;
     }
-    return websocketClientImpl_->streamAudioFile(audioData, 4000);
+    return websocketClientImpl_->streamAudio(audioData, chunkSize);
 }
 
 bool deepgram::listen::ListenWebsocketClient::sendFinalizeMessage()
