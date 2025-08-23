@@ -20,6 +20,7 @@ int testSpeak(const char* apiKey) {
             return EXIT_FAILURE;
         }
 
+        // raw file to write into, can be opened with Audacity (https://www.audacityteam.org/)
         std::ofstream audioFile("audio-output.raw", std::ios::binary);
         client.setSpeechResultCallback([&audioFile](const char *data, int size) {
             audioFile.write(data, size);
@@ -37,17 +38,10 @@ int testSpeak(const char* apiKey) {
 
         client.startReceiving();
 
-        for(int i=0;i<10;i++) {
-            std::ostringstream os;
-            os <<" hey " << i << " - " << "This is a test sentence for Deepgram's speech synthesis capabilities.";
-            client.speak(os.str());
-            //std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-        //client.sendFlushMessage();
-        //std::this_thread::sleep_for(std::chrono::seconds(3));
-        client.speak("Yo, this is another sample sentence.");
-        //client.sendFlushMessage();
-        std::this_thread::sleep_for(std::chrono::seconds(200));
+        client.speak("This is a test sentence for Deepgram's speech synthesis capabilities.");
+        client.sendFlushMessage();
+
+        std::this_thread::sleep_for(std::chrono::seconds(10));
         return EXIT_SUCCESS;
     }
     catch (const std::exception &e)

@@ -143,6 +143,9 @@ Pull requests and issues are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.
 - [ ] Document all public APIs
 - [ ] Support additional Deepgram features (mainly the intelligence layer)
 
+> [!WARNING]
+> The text to speech struggles with relatively long sentences even when a flush command is sent right after. The workaround that I found for now, is to wait for about 1 second then send the subsequent text to synthesize. I am actively investigating this issue.
+
 ## Acknowledgements
 
 This is an unofficial API developed for use in my own projects and shared with the community. I am not affiliated with Deepgram in any way.
