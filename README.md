@@ -1,6 +1,6 @@
-# deepgrampp
+# Deepgrampp
 
-**deepgrampp** is an independent, community-driven C++ SDK for Deepgram’s Speech-to-Text (transcription) and Text-to-Speech (synthesis) APIs. It offers real-time streaming capabilities, straightforward integration, and modern C++.
+**Deepgrampp** is an independent, community-driven C++ SDK for Deepgram’s Speech-to-Text (transcription) and Text-to-Speech (synthesis) APIs. It offers real-time streaming capabilities, straightforward integration, and modern C++.
 
 ## Features
 
