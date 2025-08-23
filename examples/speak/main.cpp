@@ -5,13 +5,13 @@
 #include <spdlog/spdlog.h>
 #include <functional>
 #include <deepgrampp/deepgram.hpp>
-
+#include <sstream>
 
 int testSpeak(const char* apiKey) {
     try {
-        deepgram::speak::SpeakWebsocketClient client("api.deepgram.com", apiKey);
+        deepgram::speak::SpeakWebsocketClient client(apiKey);
         deepgram::speak::LiveSpeakConfig config({
-            .model = deepgram::speak::models::featured::en::APOLLO,
+            .model = deepgram::speak::models::featured::en::THALIA,
             .sampleRate = 16000,
             .encoding = deepgram::speak::encoding::LINEAR_16
         });
@@ -20,7 +20,8 @@ int testSpeak(const char* apiKey) {
             return EXIT_FAILURE;
         }
 
-        std::ofstream audioFile("/Users/fateh/Documents/GitHub/deepgrampp/test.raw", std::ios::binary);
+        // raw file to write into, can be opened with Audacity (https://www.audacityteam.org/)
+        std::ofstream audioFile("audio-output.raw", std::ios::binary);
         client.setSpeechResultCallback([&audioFile](const char *data, int size) {
             audioFile.write(data, size);
             audioFile.flush();
@@ -37,9 +38,10 @@ int testSpeak(const char* apiKey) {
 
         client.startReceiving();
 
-        client.speak("Hello, this is a sample speech to test Deepgram's capabilities. it will be processed and saved to a file.");
+        client.speak("This is a test sentence for Deepgram's speech synthesis capabilities.");
         client.sendFlushMessage();
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+
+        std::this_thread::sleep_for(std::chrono::seconds(10));
         return EXIT_SUCCESS;
     }
     catch (const std::exception &e)
@@ -51,7 +53,7 @@ int testSpeak(const char* apiKey) {
 
 int main()
 {
-    constexpr const char *apiKey = "da3313d72d69f139a4d19f1b19fd0848ab22fdfa";
+    constexpr const char *apiKey = "API_KEY";
     testSpeak(apiKey);
     return 0;
 }

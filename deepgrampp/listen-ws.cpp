@@ -13,30 +13,31 @@ using tcp = net::ip::tcp;
 
 using Websocket = websocket::stream<ssl::stream<tcp::socket>>;
 
-ListenWebsocketClient::ListenWebsocketClient(const std::string &host,
-                                             const std::string &apiKey,
-                                             const std::string &port)
+ListenWebsocketClient::ListenWebsocketClient(const std::string &apiKey)
 {
-    websocketClientImpl_ = new ListenWebsocketClientImpl(host, apiKey, port);
+    websocketClientImpl_ = std::make_unique<ListenWebsocketClientImpl>("api.deepgram.com", apiKey, "443");
 }
 
 ListenWebsocketClient::~ListenWebsocketClient()
 {
     close();
-    if (websocketClientImpl_ != nullptr)
-    {
-        delete websocketClientImpl_;
-        websocketClientImpl_ = nullptr;
-    }
 }
 
 bool ListenWebsocketClient::connect(const LiveTranscriptionOptions &options)
 {
+    if (!websocketClientImpl_) {
+        spdlog::error("can't connect, websocketClientImpl_ is not initialized");
+        return false;
+    }
     return websocketClientImpl_->connect(options);
 }
 
 void ListenWebsocketClient::startReceiving()
 {
+    if (!websocketClientImpl_) {
+        spdlog::error("can't start receiving, websocketClientImpl_ is not initialized");
+        return;
+    }
     websocketClientImpl_->startReceiving([this](const std::string& message) {
         handleResponse(message);
     });
@@ -44,26 +45,46 @@ void ListenWebsocketClient::startReceiving()
 
 void ListenWebsocketClient::startKeepalive()
 {
+    if (!websocketClientImpl_) {
+        spdlog::error("can't start keepalive, websocketClientImpl_ is not initialized");
+        return;
+    }
     websocketClientImpl_->startKeepalive();
 }
 
-bool ListenWebsocketClient::streamAudioFile(const std::vector<uint8_t> &audioData)
+bool ListenWebsocketClient::streamAudio(const std::vector<uint8_t> &audioData, int chunkSize)
 {
-    return websocketClientImpl_->streamAudioFile(audioData, 4000);
+    if (!websocketClientImpl_) {
+        spdlog::error("can't stream audio file, websocketClientImpl_ is not initialized");
+        return false;
+    }
+    return websocketClientImpl_->streamAudio(audioData, chunkSize);
 }
 
 bool deepgram::listen::ListenWebsocketClient::sendFinalizeMessage()
 {
+    if (!websocketClientImpl_) {
+        spdlog::error("can't send finalize message, websocketClientImpl_ is not initialized");
+        return false;
+    }
     return websocketClientImpl_->sendFinalizeMessage();
 }
 
 bool ListenWebsocketClient::sendAudioChunk(const uint8_t *data, size_t size)
 {
+    if (!websocketClientImpl_) {
+        spdlog::error("can't send audio chunk, websocketClientImpl_ is not initialized");
+        return false;
+    }
     return websocketClientImpl_->sendAudioChunk(data, size);
 }
 
 void ListenWebsocketClient::sendCloseStream()
 {
+    if (!websocketClientImpl_) {
+        spdlog::error("can't send close stream, websocketClientImpl_ is not initialized");
+        return;
+    }
     websocketClientImpl_->sendCloseStream();
 }
 
@@ -114,11 +135,19 @@ void ListenWebsocketClient::handleResponse(const std::string &message)
 
 void ListenWebsocketClient::stopReceiving()
 {
+    if (!websocketClientImpl_) {
+        spdlog::error("can't stop receiving, websocketClientImpl_ is not initialized");
+        return;
+    }
     websocketClientImpl_->stopReceiving();
 }
 
 void ListenWebsocketClient::close()
 {
+    if (!websocketClientImpl_) {
+        spdlog::error("can't close, websocketClientImpl_ is not initialized");
+        return;
+    }
     websocketClientImpl_->close();
 }
 

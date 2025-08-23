@@ -100,7 +100,7 @@ namespace deepgram
                 }
             }
 
-            void startReceiving(
+            bool startReceiving(
                 std::function<void(const char*, int)> audioCallback,
                 std::function<void(const std::string&)> textCallback
             )
@@ -134,7 +134,7 @@ namespace deepgram
                         } else {
                             // text data represents json responses
                             std::string message = beast::buffers_to_string(buffer.data());
-                            spdlog::debug("Received text message: {}", message);
+                            spdlog::info("Received text message: {}", message);
                             textCallback(message);
                         }
                         buffer.consume(bytesRead);
@@ -149,12 +149,12 @@ namespace deepgram
                 spdlog::info("Receive loop ended."); });
             }
 
-            void sendPayload(const std::string &payload)
+            bool sendPayload(const std::string &payload)
             {
                 if (!_webSocket.is_open())
                 {
                     spdlog::error("can't send payload, websocket not open");
-                    return;
+                    return false;
                 }
                 try
                 {
@@ -165,63 +165,25 @@ namespace deepgram
                     if (ec)
                     {
                         spdlog::error("Write error: {}", ec.message());
-                    }
-                }
-                catch (const std::exception &e)
-                {
-                    spdlog::error("sendPayload error: {}", e.what());
-                }
-            }
-
-            bool sendFlushMessage()
-            {
-                if (!_webSocket.is_open())
-                {
-                    spdlog::error("can't send flush message, websocket not open");
-                    return false;
-                }
-                try
-                {
-                    beast::error_code ec;
-                    // prepare to send text
-                    _webSocket.text(true);
-                    _webSocket.write(net::buffer(std::string(control::FLUSH)), ec);
-                    if (ec)
-                    {
-                        spdlog::error("Write error: {}", ec.message());
                         return false;
                     }
                 }
                 catch (const std::exception &e)
                 {
-                    spdlog::error("sendFinalizeMessage error: {}", e.what());
+                    spdlog::error("sendPayload error: {}", e.what());
                     return false;
                 }
                 return true;
             }
 
-            void sendCloseStream()
+            bool sendFlushMessage()
             {
-                try
-                {
-                    // Send as text message
-                    _webSocket.text(true);
-                    beast::error_code ec;
-                    _webSocket.write(net::buffer(std::string(control::CLOSE)), ec);
+                return sendPayload(std::string(control::FLUSH));
+            }
 
-                    if (ec)
-                    {
-                        spdlog::error("Error sending close stream: {}", ec.message());
-                    }
-                    else
-                    {
-                        spdlog::info("Sent close stream message.");
-                    }
-                }
-                catch (const std::exception &e)
-                {
-                    spdlog::error("Error in sendCloseStream: {}", e.what());
-                }
+            bool sendCloseStream()
+            {
+                return sendPayload(std::string(control::CLOSE));
             }
 
             void stopReceiving()

@@ -10,6 +10,11 @@
 #include <boost/beast/http.hpp>
 #include <functional>
 #include <spdlog/spdlog.h>
+#include <string>
+#include <iostream>
+#include <thread>
+#include <chrono>
+#include <atomic>
 
 using namespace boost;
 using namespace boost::beast;
@@ -57,6 +62,11 @@ namespace deepgram
 
             bool connect(const LiveTranscriptionOptions &options)
             {
+                if (connected_ && _webSocket.is_open())
+                {
+                    spdlog::warn("Already connected to Deepgram.");
+                    return true;
+                }
                 try
                 {
                     std::string target = options.toQueryString();
@@ -167,7 +177,7 @@ namespace deepgram
             spdlog::debug("Keepalive thread ended"); });
             }
 
-            bool streamAudioFile(const std::vector<uint8_t> &audioData, size_t chunkSize = 4000)
+            bool streamAudio(const std::vector<uint8_t> &audioData, size_t chunkSize = 4000)
             {
                 if (!connected_ || !_webSocket.is_open())
                 {
@@ -278,6 +288,10 @@ namespace deepgram
 
             void close()
             {
+                if(!connected_ || !_webSocket.is_open()) {
+                    spdlog::warn("WebSocket is not connected.");
+                    return;
+                }
                 spdlog::debug("Closing connection...");
 
                 stopReceiving();
