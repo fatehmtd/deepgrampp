@@ -32,3 +32,5 @@ build/
 *.out
 *.app
 audio-output.raw
+
+.vscode/
