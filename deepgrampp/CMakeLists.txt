@@ -44,9 +44,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${OPENSSL_INCLUDE_DIR})
 
 # Declare deepgrampp library
-add_library(deepgrampp SHARED
-    listen-ws.cpp
-    speak-ws.cpp
+add_library(deepgrampp STATIC
+    ./src/listen-ws.cpp
+    ./src/speak-ws.cpp
     ./include/deepgrampp/listen-ws.hpp
     ./include/deepgrampp/listen.hpp
     ./include/deepgrampp/speak.hpp

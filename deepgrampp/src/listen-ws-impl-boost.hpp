@@ -1,4 +1,4 @@
-#include "include/deepgrampp/listen-ws.hpp"
+#include "../include/deepgrampp/listen-ws.hpp"
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/beast/websocket/ssl.hpp>
@@ -119,7 +119,7 @@ namespace deepgram
 
                         if (ec == websocket::error::closed)
                         {
-                            spdlog::error("WebSocket closed by server.");
+                            spdlog::warn("WebSocket closed by server.");
                             break;
                         }
 
@@ -307,7 +307,9 @@ namespace deepgram
                     {
                         beast::error_code ec;
                         _webSocket.close(websocket::close_code::normal, ec);
-                        if (ec && ec != websocket::error::closed)
+                        if(websocket::error::closed == ec) {
+                            spdlog::warn("WebSocket already closed.");
+                        } else if (ec && ec != websocket::error::closed)
                         {
                             spdlog::error("Close error: {}", ec.message());
                         }

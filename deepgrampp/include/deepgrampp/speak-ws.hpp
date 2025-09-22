@@ -72,11 +72,21 @@ namespace deepgram
             using SpeechControlResponseCallback = std::function<void(const SpeakControlResponse &)>;
             using SpeechCloseFrameCallback = std::function<void(const SpeakCloseFrame &)>;
             using SpeechMetadataResponseCallback = std::function<void(const MetadataResponse &)>;
+            using SpeechErrorCallback = std::function<void(const std::string &)>;
+            using SpeechDisconnectedCallback = std::function<void()>;
+            using SpeechStartedCallback = std::function<void()>;
+            using SpeechEndedCallback = std::function<void()>;
 
             void setSpeechResultCallback(SpeechResultCallback callback);
             void setSpeechControlResponseCallback(SpeechControlResponseCallback callback);
             void setSpeechCloseFrameCallback(SpeechCloseFrameCallback callback);
             void setSpeechMetadataResponseCallback(SpeechMetadataResponseCallback callback);
+
+            void setSpeechErrorCallback(SpeechErrorCallback callback);
+            void setSpeechDisconnectedCallback(SpeechDisconnectedCallback callback);
+
+            void setSpeechStartedCallback(SpeechStartedCallback callback);
+            void setSpeechEndedCallback(SpeechEndedCallback callback);
 
         private:
             SpeechResultCallback _speechResultCallback;
@@ -84,6 +94,10 @@ namespace deepgram
             SpeechCloseFrameCallback _speechCloseFrameCallback;
             SpeechMetadataResponseCallback _speechMetadataResponseCallback;
             std::unique_ptr<SpeakWebsocketClientImpl> _speakWebsocketClientImpl;
+            SpeechErrorCallback _speechErrorCallback;
+            SpeechDisconnectedCallback _speechDisconnectedCallback;
+            SpeechStartedCallback _speechStartedCallback;
+            SpeechEndedCallback _speechEndedCallback;
         };
     }
 }

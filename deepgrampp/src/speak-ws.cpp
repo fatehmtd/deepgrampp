@@ -54,6 +54,26 @@ void deepgram::speak::SpeakWebsocketClient::startReceiving()
                         _speechCloseFrameCallback(SpeakCloseFrame::fromJson(jsonResponse));
                     }
                 }
+            },
+            [this](const std::string &errorMessage) {
+                if (_speechErrorCallback) {
+                    _speechErrorCallback(errorMessage);
+                }
+            },
+            [this]() {
+                if (_speechDisconnectedCallback) {
+                    _speechDisconnectedCallback();
+                }
+            },
+            [this]() {
+                if (_speechStartedCallback) {
+                    _speechStartedCallback();
+                }
+            },
+            [this]() {
+                if (_speechEndedCallback) {
+                    _speechEndedCallback();
+                }
             }
         );
     } else {
@@ -123,4 +143,24 @@ void deepgram::speak::SpeakWebsocketClient::setSpeechCloseFrameCallback(SpeechCl
 void deepgram::speak::SpeakWebsocketClient::setSpeechMetadataResponseCallback(SpeechMetadataResponseCallback callback)
 {
     _speechMetadataResponseCallback = std::move(callback);
+}
+
+void deepgram::speak::SpeakWebsocketClient::setSpeechErrorCallback(SpeechErrorCallback callback)
+{
+    _speechErrorCallback = std::move(callback);
+}
+
+void deepgram::speak::SpeakWebsocketClient::setSpeechDisconnectedCallback(SpeechDisconnectedCallback callback)
+{
+    _speechDisconnectedCallback = std::move(callback);
+}
+
+void deepgram::speak::SpeakWebsocketClient::setSpeechStartedCallback(SpeechStartedCallback callback)
+{
+    _speechStartedCallback = std::move(callback);
+}
+
+void deepgram::speak::SpeakWebsocketClient::setSpeechEndedCallback(SpeechEndedCallback callback)
+{
+    _speechEndedCallback = std::move(callback);
 }
