@@ -44,11 +44,12 @@ int testListen(const char *apiKey, const std::string& audioFilePath)
         // Create and connect the client
         deepgram::listen::ListenWebsocketClient client(apiKey);
 
-        deepgram::listen::LiveTranscriptionOptions options({.model = deepgram::listen::models::nova_3::GENERAL,
-                                                            .language = deepgram::listen::languages::nova_3::MULTILINGUAL,
-                                                            .sampleRate = 16000,
-                                                            .encoding = deepgram::listen::encoding::LINEAR_16,
-                                                            .interimResults = true});
+        deepgram::listen::LiveTranscriptionOptions options;
+        options.model = deepgram::listen::models::nova_3::GENERAL;
+        options.language = deepgram::listen::languages::nova_3::MULTILINGUAL;
+        options.sampleRate = 16000;
+        options.encoding = deepgram::listen::encoding::LINEAR_16;
+        options.interimResults = true;
 
         if (!client.connect(options))
         {
