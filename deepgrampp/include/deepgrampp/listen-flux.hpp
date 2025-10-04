@@ -38,9 +38,10 @@ namespace deepgram {
                 std::optional<bool> mip_opt_out;
                 std::optional<std::string> tag;
 
-                std::string toQueryString() const {
+                std::string toQueryString(const std::string& prefix = "/v2/listen") const {
                     std::ostringstream query;
-                    query << "model=" << model
+                    query << prefix
+                        << "?model=" << model
                         << "&encoding=" << encoding
                         << "&sample_rate=" << sample_rate;
 

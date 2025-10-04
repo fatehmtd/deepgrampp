@@ -60,10 +60,10 @@ int testListen(const char* apiKey, const std::string& audioFilePath)
             spdlog::error("Failed to connect to Deepgram.");
             return EXIT_FAILURE;
         }
-/*
+
         client.setOnPartialTranscription([](const deepgram::listen::TranscriptionResult& result)
             { spdlog::info("Partial transcription: {}", result.channel.alternatives[0].transcript); });
-*/
+
         client.setOnFinalTranscription([&client](const deepgram::listen::TranscriptionResult& result)
             { spdlog::info("Final transcription: {}", result.channel.alternatives[0].transcript); });
 
@@ -74,24 +74,24 @@ int testListen(const char* apiKey, const std::string& audioFilePath)
         // Start receiving messages
         client.startReceiving();
 
-        // Wait for connection to stabilize and receive metadata
+        // Wait for connection to stabilize
         spdlog::info("Waiting for metadata...");
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(2));
 
-        for (int i = 0; i < 5;i++) {
+        for (int i = 0; i < 3; i++) {
             spdlog::info("Iteration: {} ****************************************************************************", i);
             // Stream the audio file
-            if (!client.streamAudio(audioData, 2000))
+            if (!client.streamAudio(audioData))
             {
                 spdlog::error("Failed to stream audio file.");
                 return EXIT_FAILURE;
             }
-            std::this_thread::sleep_for(std::chrono::seconds(5));
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
         // Wait for final transcription results
         spdlog::info("Waiting for final results...");
-        std::this_thread::sleep_for(std::chrono::seconds(500));
+        std::this_thread::sleep_for(std::chrono::seconds(60));
 
         spdlog::info("Transcription complete!");
         return EXIT_SUCCESS;
@@ -106,7 +106,6 @@ int testListen(const char* apiKey, const std::string& audioFilePath)
 int main()
 {
     const char* apiKey = std::getenv("DEEPGRAM_API_KEY");
-    //const char* apiKey = "d62e6a72e003726cdf1587151726b6f11a6b0c42";
     spdlog::info("Using Deepgram API Key: {}", apiKey);
     testListen(apiKey, "sample_speech.raw");
     return 0;

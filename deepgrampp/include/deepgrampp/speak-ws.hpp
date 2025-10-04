@@ -68,6 +68,9 @@ namespace deepgram
              */
             bool sendCloseMessage();
 
+            /**
+             * Callback type definitions
+             */
             using SpeechResultCallback = std::function<void(const char *, int)>;
             using SpeechControlResponseCallback = std::function<void(const SpeakControlResponse &)>;
             using SpeechCloseFrameCallback = std::function<void(const SpeakCloseFrame &)>;
@@ -88,6 +91,12 @@ namespace deepgram
             void setSpeechStartedCallback(SpeechStartedCallback callback);
             void setSpeechEndedCallback(SpeechEndedCallback callback);
 
+            /**
+             * Sets the speech reception timeout.
+             * This timeout defines how long the client will wait for speech data before considering the connection lost
+             * @note this is not officially supported by Deepgram, but it is useful to detect speech generation end based on inactivity.
+             * @param timeoutMs Timeout in milliseconds. Default is 30000 ms (30 seconds)
+             */
             void setSpeechReceptionTimeout(int timeoutMs);
 
         private:
