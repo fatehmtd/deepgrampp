@@ -34,3 +34,5 @@ build/
 audio-output.raw
 
 .vscode/
+
+local-install/

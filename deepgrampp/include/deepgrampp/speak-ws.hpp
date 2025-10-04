@@ -88,6 +88,8 @@ namespace deepgram
             void setSpeechStartedCallback(SpeechStartedCallback callback);
             void setSpeechEndedCallback(SpeechEndedCallback callback);
 
+            void setSpeechReceptionTimeout(int timeoutMs);
+
         private:
             SpeechResultCallback _speechResultCallback;
             SpeechControlResponseCallback _speechControlResponseCallback;

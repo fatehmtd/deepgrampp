@@ -30,7 +30,7 @@ namespace deepgram
     {
         class ListenWebsocketClientImpl
         {
-        private:
+            private:
             boost::asio::io_context _ioContext;
             boost::beast::net::ssl::context _sslContext;
             Websocket _webSocket;
@@ -41,15 +41,15 @@ namespace deepgram
             std::thread _dataReceptionThread;
             std::thread _keepaliveThread;
             std::atomic<bool> _keepReceiving;
-            std::atomic<bool> connected_;
+            std::atomic<bool> _connected;
 
-        public:
-            ListenWebsocketClientImpl(const std::string &host,
-                                      const std::string &apiKey,
-                                      const std::string &port)
+            public:
+            ListenWebsocketClientImpl(const std::string& host,
+                const std::string& apiKey,
+                const std::string& port)
                 : _host(host), _apiKey(apiKey), _port(port),
-                  _ioContext(), _sslContext(boost::beast::net::ssl::context::tlsv12_client),
-                  _webSocket(_ioContext, _sslContext)
+                _ioContext(), _sslContext(boost::beast::net::ssl::context::tlsv12_client),
+                _webSocket(_ioContext, _sslContext)
             {
                 _sslContext.set_default_verify_paths();
                 _sslContext.set_verify_mode(boost::beast::net::ssl::verify_peer);
@@ -60,9 +60,9 @@ namespace deepgram
                 close();
             }
 
-            bool connect(const LiveTranscriptionOptions &options)
+            bool connect(const LiveTranscriptionOptions& options)
             {
-                if (connected_ && _webSocket.is_open())
+                if (_connected && _webSocket.is_open())
                 {
                     spdlog::warn("Already connected to Deepgram.");
                     return true;
@@ -73,7 +73,7 @@ namespace deepgram
 
                     spdlog::debug("target: {}", target);
 
-                    tcp::resolver resolver{_ioContext};
+                    tcp::resolver resolver{ _ioContext };
                     auto const results = resolver.resolve(_host, _port);
 
                     spdlog::debug("Connecting to {}:{} ...", _host, _port);
@@ -85,7 +85,7 @@ namespace deepgram
 
                     spdlog::debug("Performing WebSocket handshake...");
                     _webSocket.set_option(websocket::stream_base::decorator(
-                        [this](websocket::request_type &req)
+                        [this](websocket::request_type& req)
                         {
                             req.set(http::field::authorization, "Token " + _apiKey);
                             req.set(http::field::user_agent, "DeepgramCppClient/1.0");
@@ -93,93 +93,93 @@ namespace deepgram
 
                     _webSocket.handshake(_host, target);
                     spdlog::debug("WebSocket connected successfully!");
-                    connected_ = true;
+                    _connected = true;
                     _keepReceiving = true;
                     return true;
                 }
-                catch (const std::exception &e)
+                catch (const std::exception& e)
                 {
                     spdlog::error("Connection error: {}", e.what());
                     return false;
                 }
             }
 
-            void startReceiving(const std::function<void(const std::string &)> &callBack)
+            void startReceiving(const std::function<void(const std::string&)>& callBack)
             {
                 _dataReceptionThread = std::thread([this, callBack]()
-                                                   {
-                spdlog::debug("Starting receive loop");
-                beast::flat_buffer buffer;
-                beast::error_code ec;
-                while (_keepReceiving && _webSocket.is_open())
-                {
-                    try
                     {
-                        size_t bytesRead = _webSocket.read(buffer, ec);
-
-                        if (ec == websocket::error::closed)
+                        spdlog::debug("Starting receive loop");
+                        beast::flat_buffer buffer;
+                        beast::error_code ec;
+                        while (_keepReceiving && _webSocket.is_open())
                         {
-                            spdlog::warn("WebSocket closed by server.");
-                            break;
+                            try
+                            {
+                                size_t bytesRead = _webSocket.read(buffer, ec);
+
+                                if (ec == websocket::error::closed)
+                                {
+                                    spdlog::warn("WebSocket closed by server.");
+                                    break;
+                                }
+
+                                if (ec)
+                                {
+                                    spdlog::error("Read error: {}", ec.message());
+                                    break;
+                                }
+                                std::string message = beast::buffers_to_string(buffer.data());
+                                callBack(message);
+                                buffer.consume(bytesRead);
+                            }
+                            catch (const std::exception& e)
+                            {
+                                spdlog::error("Exception in receive loop: {}", e.what());
+                                break;
+                            }
                         }
 
-                        if (ec)
-                        {
-                            spdlog::error("Read error: {}", ec.message());
-                            break;
-                        }
-                        std::string message = beast::buffers_to_string(buffer.data());
-                        callBack(message);
-                        buffer.consume(bytesRead);
-                    }
-                    catch (const std::exception &e)
-                    {
-                        spdlog::error("Exception in receive loop: {}", e.what());
-                        break;
-                    }
-                }
-
-                spdlog::debug("Receive loop ended."); });
+                        spdlog::debug("Receive loop ended."); });
             }
 
             void startKeepalive()
             {
                 _keepaliveThread = std::thread([this]()
-                                               {
-            spdlog::debug("Starting keepalive thread...");
-            
-            while (_keepReceiving && _webSocket.is_open())
-            {
-                std::this_thread::sleep_for(std::chrono::seconds(5)); // Send every 5 seconds
-                
-                if (!_keepReceiving || !_webSocket.is_open()) break;
-                
-                try
-                {
-                    beast::error_code ec;
-                    _webSocket.write(net::buffer(std::string(deepgram::listen::control::KEEPALIVE_MESSAGE)), ec);
-                    
-                    if (ec)
                     {
-                        spdlog::error("Keepalive send error: {}", ec.message());
-                        break;
-                    }
-                    
-                    spdlog::debug("Sent keepalive message");
-                }
-                catch (const std::exception &e)
-                {
-                    spdlog::error("Keepalive error: {}", e.what());
-                    break;
-                }
-            }
-            
-            spdlog::debug("Keepalive thread ended"); });
+                        spdlog::debug("Starting keepalive thread...");
+
+                        while (_keepReceiving && _webSocket.is_open())
+                        {
+                            std::this_thread::sleep_for(std::chrono::seconds(5)); // Send every 5 seconds
+
+                            if (!_keepReceiving || !_webSocket.is_open()) break;
+
+                            try
+                            {
+                                beast::error_code ec;
+                                _webSocket.write(net::buffer(std::string(deepgram::listen::control::KEEPALIVE_MESSAGE)), ec);
+
+                                if (ec)
+                                {
+                                    spdlog::error("Keepalive send error: {}", ec.message());
+                                    break;
+                                }
+
+                                spdlog::debug("Sent keepalive message");
+                            }
+                            catch (const std::exception& e)
+                            {
+                                spdlog::error("Keepalive error: {}", e.what());
+                                break;
+                            }
+                        }
+
+                        spdlog::debug("Keepalive thread ended"); });
             }
 
-            bool streamAudio(const std::vector<uint8_t> &audioData, size_t chunkSize = 4000)
+            bool streamAudio(const std::vector<uint8_t>& audioData, size_t chunkSize = 4000)
             {
-                if (!connected_ || !_webSocket.is_open())
+                if (!_connected || !_webSocket.is_open())
                 {
                     spdlog::error("Not connected to Deepgram.");
                     return false;
@@ -227,7 +227,7 @@ namespace deepgram
                         return false;
                     }
                 }
-                catch (const std::exception &e)
+                catch (const std::exception& e)
                 {
                     spdlog::error("sendFinalizeMessage error: {}", e.what());
                     return false;
@@ -235,7 +235,7 @@ namespace deepgram
                 return true;
             }
 
-            bool sendAudioChunk(const uint8_t *data, size_t size)
+            bool sendAudioChunk(const uint8_t* data, size_t size)
             {
                 try
                 {
@@ -250,7 +250,7 @@ namespace deepgram
                     }
                     return true;
                 }
-                catch (const std::exception &e)
+                catch (const std::exception& e)
                 {
                     spdlog::error("Send chunk error: {}", e.what());
                     return false;
@@ -275,7 +275,7 @@ namespace deepgram
                         spdlog::debug("Sent close stream message.");
                     }
                 }
-                catch (const std::exception &e)
+                catch (const std::exception& e)
                 {
                     spdlog::error("Error in sendCloseStream: {}", e.what());
                 }
@@ -288,7 +288,7 @@ namespace deepgram
 
             void close()
             {
-                if(!connected_ || !_webSocket.is_open()) {
+                if (!_connected || !_webSocket.is_open()) {
                     spdlog::warn("WebSocket is not connected.");
                     return;
                 }
@@ -296,7 +296,7 @@ namespace deepgram
 
                 stopReceiving();
 
-                if (connected_ && _webSocket.is_open())
+                if (_connected && _webSocket.is_open())
                 {
                     sendCloseStream();
 
@@ -307,14 +307,15 @@ namespace deepgram
                     {
                         beast::error_code ec;
                         _webSocket.close(websocket::close_code::normal, ec);
-                        if(websocket::error::closed == ec) {
+                        if (websocket::error::closed == ec) {
                             spdlog::warn("WebSocket already closed.");
-                        } else if (ec && ec != websocket::error::closed)
+                        }
+                        else if (ec && ec != websocket::error::closed)
                         {
                             spdlog::error("Close error: {}", ec.message());
                         }
                     }
-                    catch (const std::exception &e)
+                    catch (const std::exception& e)
                     {
                         spdlog::error("Exception during close: {}", e.what());
                     }
@@ -327,7 +328,7 @@ namespace deepgram
                         _dataReceptionThread.join();
                     }
                 }
-                catch (const std::exception &e)
+                catch (const std::exception& e)
                 {
                 }
 
@@ -338,11 +339,11 @@ namespace deepgram
                         _keepaliveThread.join();
                     }
                 }
-                catch (const std::exception &e)
+                catch (const std::exception& e)
                 {
                 }
 
-                connected_ = false;
+                _connected = false;
                 spdlog::debug("Connection closed.");
             }
         };

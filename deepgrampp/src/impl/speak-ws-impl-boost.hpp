@@ -41,7 +41,7 @@ namespace deepgram
             std::atomic<bool> _connected;
             std::atomic<bool> _receivingSpeech = false;
             std::atomic<uint64_t> _lastSpeechMessageTime = 0;
-            const int _speechReceptionTimeoutMs = 1500;
+            int _speechReceptionTimeoutMs = 500;
 
             public:
             SpeakWebsocketClientImpl(const std::string& host,
@@ -65,25 +65,35 @@ namespace deepgram
                 return _connected;
             }
 
+            void setSpeechReceptionTimeout(int timeoutMs)
+            {
+                if (timeoutMs > 0) {
+                    _speechReceptionTimeoutMs = timeoutMs;
+                } else {
+                    spdlog::warn("Invalid speech reception timeout value: {}. It must be greater than 0.", timeoutMs);
+                    _speechReceptionTimeoutMs = 500;
+                }
+            }
+
             bool connect(const LiveSpeakConfig& config)
             {
                 try
                 {
                     std::string target = config.toQueryString();
 
-                    spdlog::info("target: {}", target);
+                    spdlog::debug("target: {}", target);
 
                     tcp::resolver resolver{ _ioContext };
                     auto const results = resolver.resolve(_host, _port);
 
-                    spdlog::info("Connecting to {}:{} ...", _host, _port);
+                    spdlog::debug("Connecting to {}:{} ...", _host, _port);
                     net::connect(_webSocket.next_layer().lowest_layer(), results.begin(), results.end());
 
-                    spdlog::info("Performing SSL handshake...");
+                    spdlog::debug("Performing SSL handshake...");
                     _webSocket.next_layer().set_verify_callback(ssl::host_name_verification(_host));
                     _webSocket.next_layer().handshake(ssl::stream_base::client);
 
-                    spdlog::info("Performing WebSocket handshake...");
+                    spdlog::debug("Performing WebSocket handshake...");
                     _webSocket.set_option(websocket::stream_base::decorator(
                         [this](websocket::request_type& req)
                         {
@@ -92,7 +102,7 @@ namespace deepgram
                         }));
 
                     _webSocket.handshake(_host, target);
-                    spdlog::info("WebSocket connected successfully!");
+                    spdlog::debug("WebSocket connected successfully!");
                     _connected = true;
                     _keepReceiving = true;
                     return true;
@@ -144,7 +154,7 @@ namespace deepgram
                     speechEndedCallback,
                     speechStartedCallback]()
                     {
-                        spdlog::info("Starting receive loop");
+                        spdlog::debug("Starting receive loop");
                         beast::flat_buffer buffer;
                         beast::error_code ec;
                         // Set a read timeout
@@ -191,7 +201,7 @@ namespace deepgram
                                 else {
                                     // text data represents json responses
                                     std::string message = beast::buffers_to_string(buffer.data());
-                                    spdlog::info("Received text message: {}", message);
+                                    spdlog::debug("Received text message: {}", message);
                                     textCallback(message);
                                 }
                                 buffer.consume(bytesRead);
@@ -203,7 +213,7 @@ namespace deepgram
                             }
                         }
 
-                        spdlog::info("Receive loop ended."); });
+                        spdlog::debug("Receive loop ended."); });
                 return true;
             }
 
@@ -216,7 +226,7 @@ namespace deepgram
                 }
                 try
                 {
-                    spdlog::info("Sending payload: {}", payload);
+                    spdlog::debug("Sending payload: {}", payload);
                     beast::error_code ec;
                     _webSocket.text(true);
                     _webSocket.write(net::buffer(payload), ec);
@@ -251,7 +261,7 @@ namespace deepgram
 
             void close()
             {
-                spdlog::info("Closing connection...");
+                spdlog::debug("Closing connection...");
 
                 stopReceiving();
 
@@ -314,7 +324,7 @@ namespace deepgram
                 }
 
                 _connected = false;
-                spdlog::info("Connection closed.");
+                spdlog::debug("Connection closed.");
             }
         };
     }

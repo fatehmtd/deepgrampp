@@ -1,4 +1,4 @@
-#include "speak-ws-impl-boost.hpp"
+#include "impl/speak-ws-impl-boost.hpp"
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include "speak-ws.hpp"
@@ -163,4 +163,11 @@ void deepgram::speak::SpeakWebsocketClient::setSpeechStartedCallback(SpeechStart
 void deepgram::speak::SpeakWebsocketClient::setSpeechEndedCallback(SpeechEndedCallback callback)
 {
     _speechEndedCallback = std::move(callback);
+}
+
+void deepgram::speak::SpeakWebsocketClient::setSpeechReceptionTimeout(int timeoutMs)
+{
+    if (_speakWebsocketClientImpl) {
+        _speakWebsocketClientImpl->setSpeechReceptionTimeout(timeoutMs);
+    }
 }

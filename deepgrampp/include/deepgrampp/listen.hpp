@@ -339,7 +339,7 @@ namespace deepgram
                 }
                 if (vadEvents.has_value())
                 {
-                    oss << "&vad_events=" << (vadEvents.value() ? "true" : "false");
+                    oss << "&vad_events=" << vadEvents.value();
                 }
                 if (diarize.has_value())
                 {
@@ -355,7 +355,7 @@ namespace deepgram
                 }
                 if (utteranceEndMs.has_value())
                 {
-                    oss << "&utterance_end_ms=" << utteranceEndMs.value();
+                    oss << "&utterance_end_ms=" << std::to_string(utteranceEndMs.value());
                 }
                 return oss.str();
             }

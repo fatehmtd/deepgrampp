@@ -1,6 +1,6 @@
 
 #include "listen-ws.hpp"
-#include "listen-ws-impl-boost.hpp"
+#include "impl/listen-ws-impl-boost.hpp"
 #include <spdlog/spdlog.h>
 
 using namespace deepgram::listen;
