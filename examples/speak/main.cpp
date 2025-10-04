@@ -61,17 +61,6 @@ int testSpeak(const char* apiKey) {
         client.startReceiving();
 
         client.speak("This is a test sentence for Deepgram's speech synthesis capabilities.");
-
-        for (int i = 0; i < 3; i++) {
-            client.speak("This is another test sentence for Deepgram's speech synthesis capabilities");            
-        }
-        client.speak("Goodbye.");
-
-        for (int i = 0; i < 3; i++) {
-            client.speak("This is another test sentence for Deepgram's speech synthesis capabilities.");            
-        }
-        client.speak("Goodbye.");
-
         client.sendFlushMessage();
 
         while (isRunning) {

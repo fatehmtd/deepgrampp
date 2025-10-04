@@ -5,8 +5,9 @@
 #include <spdlog/spdlog.h>
 #include <functional>
 #include <deepgrampp/deepgram.hpp>
+#include <cstdlib>
 
-std::vector<uint8_t> readAudioFile(const std::string &filePath)
+std::vector<uint8_t> readAudioFile(const std::string& filePath)
 {
     std::ifstream file(filePath, std::ios::binary | std::ios::ate);
     if (!file)
@@ -18,7 +19,7 @@ std::vector<uint8_t> readAudioFile(const std::string &filePath)
     file.seekg(0, std::ios::beg);
 
     std::vector<uint8_t> buffer(size);
-    if (!file.read(reinterpret_cast<char *>(buffer.data()), size))
+    if (!file.read(reinterpret_cast<char*>(buffer.data()), size))
     {
         throw std::runtime_error("Failed to read audio file");
     }
@@ -27,7 +28,7 @@ std::vector<uint8_t> readAudioFile(const std::string &filePath)
     return buffer;
 }
 
-int testListen(const char *apiKey, const std::string& audioFilePath)
+int testListen(const char* apiKey, const std::string& audioFilePath)
 {
     try
     {
@@ -50,6 +51,9 @@ int testListen(const char *apiKey, const std::string& audioFilePath)
         options.sampleRate = 16000;
         options.encoding = deepgram::listen::encoding::LINEAR_16;
         options.interimResults = true;
+        options.endpointing = 250;
+        options.utteranceEndMs = 1000;
+        options.vadEvents = true;
 
         if (!client.connect(options))
         {
@@ -57,34 +61,42 @@ int testListen(const char *apiKey, const std::string& audioFilePath)
             return EXIT_FAILURE;
         }
 
-        client.setOnPartialTranscription([](const deepgram::listen::TranscriptionResult &result)
-                                         { spdlog::info("Partial transcription: {}", result.channel.alternatives[0].transcript); });
+        client.setOnPartialTranscription([](const deepgram::listen::TranscriptionResult& result)
+            { spdlog::info("Partial transcription: {}", result.channel.alternatives[0].transcript); });
 
-        client.setOnFinalTranscription([&client](const deepgram::listen::TranscriptionResult &result)
-                                       { spdlog::info("Final transcription: {}", result.channel.alternatives[0].transcript); });
+        client.setOnFinalTranscription([&client](const deepgram::listen::TranscriptionResult& result)
+            { spdlog::info("Final transcription: {}", result.channel.alternatives[0].transcript); });
+
+        client.setOnSpeechStarted([](const deepgram::listen::SpeechStarted& speechStarted) { spdlog::info(">>> Speech started."); });
+        client.setUtteranceEndCallback([](const deepgram::listen::UtteranceEnd& utteranceEnd) { spdlog::info("<<< Utterance ended."); });
+        client.setOnMetadata([](const nlohmann::json& metadata) { spdlog::info("Received metadata: {}", metadata.dump()); });
 
         // Start receiving messages
         client.startReceiving();
 
-        // Wait for connection to stabilize and receive metadata
+        // Wait for connection to stabilize
         spdlog::info("Waiting for metadata...");
         std::this_thread::sleep_for(std::chrono::seconds(2));
 
-        // Stream the audio file
-        if (!client.streamAudio(audioData))
-        {
-            spdlog::error("Failed to stream audio file.");
-            return EXIT_FAILURE;
+        for (int i = 0; i < 3; i++) {
+            spdlog::info("Iteration: {} ****************************************************************************", i);
+            // Stream the audio file
+            if (!client.streamAudio(audioData))
+            {
+                spdlog::error("Failed to stream audio file.");
+                return EXIT_FAILURE;
+            }
+            std::this_thread::sleep_for(std::chrono::seconds(1));
         }
 
         // Wait for final transcription results
         spdlog::info("Waiting for final results...");
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(60));
 
         spdlog::info("Transcription complete!");
         return EXIT_SUCCESS;
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
         spdlog::error("Error: {}", e.what());
         return EXIT_FAILURE;
@@ -93,7 +105,8 @@ int testListen(const char *apiKey, const std::string& audioFilePath)
 
 int main()
 {
-    constexpr const char *apiKey = "API_KEY";
+    const char* apiKey = std::getenv("DEEPGRAM_API_KEY");
+    spdlog::info("Using Deepgram API Key: {}", apiKey);
     testListen(apiKey, "sample_speech.raw");
     return 0;
 }

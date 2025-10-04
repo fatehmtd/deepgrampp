@@ -47,11 +47,7 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 add_library(deepgrampp STATIC
     ./src/listen-ws.cpp
     ./src/speak-ws.cpp
-    ./include/deepgrampp/listen-ws.hpp
-    ./include/deepgrampp/listen.hpp
-    ./include/deepgrampp/speak.hpp
-    ./include/deepgrampp/speak-ws.hpp
-    ./include/deepgrampp/deepgram.hpp
+    ./src/listen-flux.cpp
 )
 
 target_link_libraries(deepgrampp
