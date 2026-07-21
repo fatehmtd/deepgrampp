@@ -132,7 +132,10 @@ int testListen(const char* apiKey, const std::string& audioFilePath)
 int main()
 {
     const char* apiKey = std::getenv("DEEPGRAM_API_KEY");
+    if (!apiKey) {
+        spdlog::error("DEEPGRAM_API_KEY environment variable is not set.");
+        return EXIT_FAILURE;
+    }
     spdlog::info("Using Deepgram API Key: {}", apiKey);
-    testListen(apiKey, "sample_speech.raw");
-    return 0;
+    return testListen(apiKey, "sample_speech.raw");
 }

@@ -41,6 +41,14 @@ target_link_libraries(listen-flux
     PRIVATE spdlog::spdlog
 )
 
+# so `./listen-flux` finds sample_speech.raw via its relative path when run
+# straight out of the build tree, without needing `cmake --install` first
+add_custom_command(TARGET listen-flux POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/sample_speech.raw
+        $<TARGET_FILE_DIR:listen-flux>/sample_speech.raw
+)
+
 install(TARGETS listen-flux
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

@@ -162,18 +162,22 @@ namespace deepgram
 
             void close()
             {
-                if (!_wsTransport->isOpen())
+                if (_wsTransport->isOpen())
                 {
-                    return;
+                    spdlog::debug("Closing connection...");
+
+                    sendCloseStream();
+                    // Wait a moment for final messages
+                    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+                    _wsTransport->close();
                 }
-                spdlog::debug("Closing connection...");
 
-                sendCloseStream();
-                // Wait a moment for final messages
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-                _wsTransport->close();
-
+                // The timeout monitor thread's own loop exits once isOpen() goes
+                // false (whether that happened here or the socket was already
+                // closed, e.g. by the server), so it must always be joined here --
+                // otherwise a joinable std::thread left in the destructor calls
+                // std::terminate().
                 if (_timeoutThread.joinable())
                 {
                     _timeoutThread.join();

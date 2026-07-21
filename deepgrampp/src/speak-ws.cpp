@@ -76,7 +76,10 @@ bool deepgram::speak::SpeakWebsocketClient::connect(const LiveSpeakConfig &confi
 
 void deepgram::speak::SpeakWebsocketClient::close()
 {
-    if (_speakWebsocketClientImpl && _speakWebsocketClientImpl->isConnected()) {
+    // Always delegate: SpeakWebsocketClientImpl::close() safely no-ops the
+    // network teardown when already disconnected, but still must run so the
+    // speech-timeout monitor thread gets joined.
+    if (_speakWebsocketClientImpl) {
         _speakWebsocketClientImpl->close();
     } else {
         spdlog::error("can't close, SpeakWebsocketClientImpl is not initialized");

@@ -80,6 +80,9 @@ int testSpeak(const char* apiKey) {
 int main()
 {
     const char* apiKey = std::getenv("DEEPGRAM_API_KEY");
-    testSpeak(apiKey);
-    return 0;
+    if (!apiKey) {
+        spdlog::error("DEEPGRAM_API_KEY environment variable is not set.");
+        return EXIT_FAILURE;
+    }
+    return testSpeak(apiKey);
 }
