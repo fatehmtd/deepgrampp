@@ -333,16 +333,28 @@ namespace deepgram
             std::optional<std::string> callback;                   // Callback URL to receive results
             std::optional<std::string> callbackMethod;              // HTTP method for the callback request (e.g. "POST")
 
-            std::string toQueryString(const std::string &prefix = "/v1/listen") const
+            /**
+             * @param includeRawAudioParams Whether to emit sample_rate/encoding/channels.
+             *        These describe headerless raw PCM and must be omitted for any audio
+             *        that already carries its own container (WAV, MP3, FLAC, a remote URL,
+             *        etc.) -- otherwise Deepgram misinterprets the container bytes as raw
+             *        PCM and silently produces garbage (empty transcript, bogus duration).
+             *        Only pass true when sending truly headerless raw audio (e.g. live
+             *        streaming, or a raw buffer with no container).
+             */
+            std::string toQueryString(const std::string &prefix = "/v1/listen", bool includeRawAudioParams = true) const
             {
                 std::ostringstream oss;
                 oss << prefix
                     << "?"
                     << "model=" << model
-                    << "&language=" << language
-                    << "&sample_rate=" << sampleRate
-                    << "&encoding=" << encoding
-                    << "&channels=" << channels;
+                    << "&language=" << language;
+                if (includeRawAudioParams)
+                {
+                    oss << "&sample_rate=" << sampleRate
+                        << "&encoding=" << encoding
+                        << "&channels=" << channels;
+                }
                 if (punctuate.has_value())
                 {
                     oss << "&punctuate=" << (punctuate.value() ? "true" : "false");
@@ -605,6 +617,37 @@ namespace deepgram
                 std::cout << "Created: " << created << std::endl;
                 std::cout << "==========================\n"
                           << std::endl;
+            }
+        };
+
+        /**
+         * PrerecordedTranscriptionResponse
+         * @note Represents the full response body of a batch/prerecorded
+         * transcription request (POST /v1/listen), i.e. `{"metadata": {...},
+         * "results": {"channels": [...]}}`. Reuses the same Metadata/Channel/
+         * Alternative/Word structs as the streaming API since the inner shapes
+         * match.
+         */
+        struct PrerecordedTranscriptionResponse
+        {
+            Metadata metadata;
+            std::vector<Channel> channels;
+
+            static PrerecordedTranscriptionResponse fromJson(const nlohmann::json &j)
+            {
+                PrerecordedTranscriptionResponse response;
+                if (j.contains("metadata"))
+                {
+                    response.metadata = Metadata::fromJson(j["metadata"]);
+                }
+                if (j.contains("results") && j["results"].contains("channels") && j["results"]["channels"].is_array())
+                {
+                    for (const auto &channelJson : j["results"]["channels"])
+                    {
+                        response.channels.push_back(Channel::fromJson(channelJson));
+                    }
+                }
+                return response;
             }
         };
 

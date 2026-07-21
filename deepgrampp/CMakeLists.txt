@@ -58,8 +58,9 @@ else()
     FetchContent_MakeAvailable(nlohmann_json)
 endif()
 
-# libcurl -- only used by the (currently unused) CurlHttpTransport, kept for
-# future REST support. TLS backend is platform-dependent when built from source.
+# libcurl -- backs CurlHttpTransport, used by ListenRestClient/SpeakRestClient
+# for Deepgram's batch REST endpoints. TLS backend is platform-dependent when
+# built from source.
 find_package(CURL QUIET)
 if(CURL_FOUND)
     message(STATUS "Using system libcurl ${CURL_VERSION_STRING}")
@@ -133,7 +134,9 @@ endif()
 # ---------------------------------------------------------------------------
 add_library(deepgrampp STATIC
     ./src/listen-ws.cpp
+    ./src/listen-rest.cpp
     ./src/speak-ws.cpp
+    ./src/speak-rest.cpp
     ./src/listen-flux.cpp
     ./transport/lws_websocket_transport.cpp
     ./transport/curl_http_transport.cpp
