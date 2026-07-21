@@ -144,7 +144,6 @@ namespace deepgram
                 }
                 try
                 {
-                    spdlog::debug("Sending payload: {}", payload);
                     _wsTransport->sendText(payload);
                     return true;
                 }

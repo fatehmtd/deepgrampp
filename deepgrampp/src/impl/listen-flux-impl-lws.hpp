@@ -87,20 +87,17 @@ namespace deepgram
                         spdlog::error("Not connected to Deepgram.");
                         return false;
                     }
-                    spdlog::debug("Streaming {} bytes of audio...", audioData.size());
-
                     size_t offset = 0;
                     while (offset < audioData.size() && _wsTransport->isOpen())
                     {
                         size_t currentChunkSize = std::min(chunkSize, audioData.size() - offset);
                         if (!sendAudioChunk(audioData.data() + offset, currentChunkSize))
                         {
-                            spdlog::error("Failed to send audio chunk");
+                            spdlog::error("Failed to send audio chunk at offset {} of total {}", offset, audioData.size());
                             return false;
                         }
                         offset += currentChunkSize;
                     }
-                    spdlog::info("Finished streaming audio data.");
                     return true;
                 }
 
