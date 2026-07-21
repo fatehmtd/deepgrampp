@@ -1,11 +1,64 @@
-#include "impl/speak-ws-impl-boost.hpp"
+#include "impl/speak-ws-impl-lws.hpp"
 #include <spdlog/spdlog.h>
 #include <nlohmann/json.hpp>
 #include "speak-ws.hpp"
 
-deepgram::speak::SpeakWebsocketClient::SpeakWebsocketClient(const std::string &apiKey)
+deepgram::speak::SpeakWebsocketClient::SpeakWebsocketClient(const std::string &apiKey,
+                                                              std::shared_ptr<transport::IWebSocketTransport> wsTransport)
 {
-    _speakWebsocketClientImpl = std::make_unique<SpeakWebsocketClientImpl>("api.deepgram.com", apiKey, "443");
+    _speakWebsocketClientImpl = std::make_unique<SpeakWebsocketClientImpl>("api.deepgram.com", apiKey, std::move(wsTransport));
+    // Wired up now, before connect() is ever called, so no messages are missed.
+    _speakWebsocketClientImpl->setHandlers(
+        [this](const char *data, int size)
+        {
+            if (_speechResultCallback)
+            {
+                _speechResultCallback(data, size);
+            }
+        },
+        [this](const std::string &message)
+        {
+            nlohmann::json jsonResponse = nlohmann::json::parse(message);
+            if (jsonResponse.contains("type"))
+            {
+                if (jsonResponse["type"] == "Metadata")
+                {
+                    if (_speechMetadataResponseCallback)
+                    {
+                        _speechMetadataResponseCallback(MetadataResponse::fromJson(jsonResponse));
+                    }
+                }
+                else if (_speechControlResponseCallback)
+                {
+                    _speechControlResponseCallback(SpeakControlResponse::fromJson(jsonResponse));
+                }
+            }
+            else if (_speechCloseFrameCallback)
+            {
+                _speechCloseFrameCallback(SpeakCloseFrame::fromJson(jsonResponse));
+            }
+        },
+        [this](const std::string &errorMessage)
+        {
+            if (_speechErrorCallback)
+            {
+                _speechErrorCallback(errorMessage);
+            }
+        },
+        [this]()
+        {
+            if (_speechDisconnectedCallback)
+            {
+                _speechDisconnectedCallback();
+            }
+        },
+        [this]()
+        {
+            if (_speechStartedCallback)
+            {
+                _speechStartedCallback();
+            }
+        });
 }
 
 deepgram::speak::SpeakWebsocketClient::~SpeakWebsocketClient()
@@ -32,50 +85,16 @@ void deepgram::speak::SpeakWebsocketClient::close()
 
 void deepgram::speak::SpeakWebsocketClient::startReceiving()
 {
+    // Message/audio callbacks are already wired up (see constructor). The only
+    // thing that still needs an explicit "connected" starting point is the
+    // end-of-speech idle-timeout monitor, since it polls _wsTransport->isOpen().
     if (_speakWebsocketClientImpl && _speakWebsocketClientImpl->isConnected()) {
-        _speakWebsocketClientImpl->startReceiving(
-            [this](const char *data, int size) {
-                if (_speechResultCallback) {
-                    _speechResultCallback(data, size);
-                }
-            },
-            [this](const std::string &message) {
-                nlohmann::json jsonResponse = nlohmann::json::parse(message);
-                if(jsonResponse.contains("type")) {
-                    if(_speechControlResponseCallback) {
-                        if(jsonResponse["type"] == "Metadata") {
-                            _speechMetadataResponseCallback(MetadataResponse::fromJson(jsonResponse));
-                        } else {
-                            _speechControlResponseCallback(SpeakControlResponse::fromJson(jsonResponse));
-                        }
-                    }
-                } else {
-                    if (_speechCloseFrameCallback) {
-                        _speechCloseFrameCallback(SpeakCloseFrame::fromJson(jsonResponse));
-                    }
-                }
-            },
-            [this](const std::string &errorMessage) {
-                if (_speechErrorCallback) {
-                    _speechErrorCallback(errorMessage);
-                }
-            },
-            [this]() {
-                if (_speechDisconnectedCallback) {
-                    _speechDisconnectedCallback();
-                }
-            },
-            [this]() {
-                if (_speechStartedCallback) {
-                    _speechStartedCallback();
-                }
-            },
+        _speakWebsocketClientImpl->startSpeechTimeoutMonitor(
             [this]() {
                 if (_speechEndedCallback) {
                     _speechEndedCallback();
                 }
-            }
-        );
+            });
     } else {
         spdlog::error("can't start receiving, SpeakWebsocketClientImpl is not initialized");
     }
@@ -111,7 +130,7 @@ bool deepgram::speak::SpeakWebsocketClient::sendClearMessage()
         return _speakWebsocketClientImpl->sendPayload(speak::control::CLEAR);
     } else {
         spdlog::error("can't send clear message, SpeakWebsocketClientImpl is not initialized");
-        return false;   
+        return false;
     }
 }
 

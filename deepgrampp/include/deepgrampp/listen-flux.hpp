@@ -2,6 +2,7 @@
 #define DEEPGRAMPP_LISTEN_FLUX_HPP
 
 #include <deepgrampp_lib_export.h>
+#include "transport/websocket_transport.hpp"
 #include <nlohmann/json.hpp>
 #include <memory>
 #include <sstream>
@@ -171,7 +172,14 @@ namespace deepgram {
              */
             class DEEPGRAMPP_EXPORT ListenFluxClient {
                 public:
-                ListenFluxClient(const std::string& apiKey);
+                /**
+                 * @param apiKey Your Deepgram API key for authentication.
+                 * @param wsTransport Optional WebSocket transport to use instead of the default
+                 *        libwebsockets-based transport (deepgram::transport::LwsWebSocketTransport).
+                 *        Useful for tests or to plug in a different networking stack.
+                 */
+                ListenFluxClient(const std::string& apiKey,
+                                  std::shared_ptr<deepgram::transport::IWebSocketTransport> wsTransport = nullptr);
                 ~ListenFluxClient();
 
                 /**

@@ -304,7 +304,7 @@ namespace deepgram
          */
         struct LiveTranscriptionOptions
         {
-            // see https://developers.deepgram.com/docs/live-transcription-options
+            // see https://developers.deepgram.com/reference/speech-to-text/listen-streaming
             std::string model = models::nova_3::GENERAL;            // Default model
             std::string language = languages::nova_3::MULTILINGUAL; // Default language
             std::optional<int> punctuate;                           // Default punctuation
@@ -317,7 +317,21 @@ namespace deepgram
             std::optional<int> utteranceEndMs;          // Default utterance end timeout in milliseconds
             std::optional<bool> interimResults;         // Default interim results
             std::optional<int> vadEvents;               // Default VAD events
-            std::optional<int> diarize;                 // Default diarization
+            // @deprecated Use diarizeModel instead. See https://developers.deepgram.com/docs/nova-2-deprecation
+            std::optional<int> diarize;
+            std::optional<std::string> diarizeModel;    // Speaker diarization model, e.g. "latest", "v1"
+            std::optional<bool> smartFormat;             // Apply formatting (dates, currency, etc.) to the transcript
+            std::optional<bool> numerals;                 // Convert numbers from written format to numerical format
+            std::optional<bool> profanityFilter;           // Censor recognized profanity
+            std::optional<std::string> redact;              // Redaction mode: pci, numbers, aggressive_numbers, ssn
+            std::optional<bool> dictation;                   // Convert spoken punctuation commands into punctuation marks
+            std::optional<bool> detectEntities;               // Identify and extract key entities from the transcript
+            std::optional<bool> mipOptOut;                     // Opt out of the Deepgram Model Improvement Program
+            std::vector<std::string> keywords;                  // Boost recognition of specific keywords
+            std::optional<std::string> tag;                      // Arbitrary request tag for tracking/analytics
+            std::optional<std::string> version;                   // API model version, default "latest"
+            std::optional<std::string> callback;                   // Callback URL to receive results
+            std::optional<std::string> callbackMethod;              // HTTP method for the callback request (e.g. "POST")
 
             std::string toQueryString(const std::string &prefix = "/v1/listen") const
             {
@@ -345,6 +359,10 @@ namespace deepgram
                 {
                     oss << "&diarize=" << (diarize.value() ? "true" : "false");
                 }
+                if (diarizeModel.has_value())
+                {
+                    oss << "&diarize_model=" << diarizeModel.value();
+                }
                 if (multichannel.has_value())
                 {
                     oss << "&multichannel=" << multichannel.value();
@@ -356,6 +374,54 @@ namespace deepgram
                 if (utteranceEndMs.has_value())
                 {
                     oss << "&utterance_end_ms=" << std::to_string(utteranceEndMs.value());
+                }
+                if (smartFormat.has_value())
+                {
+                    oss << "&smart_format=" << (smartFormat.value() ? "true" : "false");
+                }
+                if (numerals.has_value())
+                {
+                    oss << "&numerals=" << (numerals.value() ? "true" : "false");
+                }
+                if (profanityFilter.has_value())
+                {
+                    oss << "&profanity_filter=" << (profanityFilter.value() ? "true" : "false");
+                }
+                if (redact.has_value())
+                {
+                    oss << "&redact=" << redact.value();
+                }
+                if (dictation.has_value())
+                {
+                    oss << "&dictation=" << (dictation.value() ? "true" : "false");
+                }
+                if (detectEntities.has_value())
+                {
+                    oss << "&detect_entities=" << (detectEntities.value() ? "true" : "false");
+                }
+                if (mipOptOut.has_value())
+                {
+                    oss << "&mip_opt_out=" << (mipOptOut.value() ? "true" : "false");
+                }
+                for (const auto &keyword : keywords)
+                {
+                    oss << "&keywords=" << keyword;
+                }
+                if (tag.has_value())
+                {
+                    oss << "&tag=" << tag.value();
+                }
+                if (version.has_value())
+                {
+                    oss << "&version=" << version.value();
+                }
+                if (callback.has_value())
+                {
+                    oss << "&callback=" << callback.value();
+                }
+                if (callbackMethod.has_value())
+                {
+                    oss << "&callback_method=" << callbackMethod.value();
                 }
                 return oss.str();
             }
@@ -572,9 +638,9 @@ namespace deepgram
             {
                 TranscriptionResult result;
                 result.type = j.value("type", "");
-                result.isFinal = j.value("isFinal", false);
+                result.isFinal = j.value("is_final", false);
                 result.speech_final = j.value("speech_final", false);
-                result.isFromFinalize = j.value("is_from_finalize", false);
+                result.isFromFinalize = j.value("from_finalize", false);
 
                 if (j.contains("duration"))
                 {

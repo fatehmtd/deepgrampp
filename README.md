@@ -32,8 +32,8 @@
 - **Example applications** for all supported APIs
 - **Memory-efficient streaming** with configurable chunk sizes
 
-> **Note:**  
-> This project uses [Boost.Asio](https://www.boost.org/doc/libs/release/doc/html/boost_asio.html) for networking, enabling robust and portable WebSocket and TCP connections for communication with Deepgram's APIs. There is a TODO item to provide support for alternative networking apis for a lighter integration.
+> **Note:**
+> WebSocket streaming is implemented on top of [libwebsockets](https://libwebsockets.org/), behind a small `deepgram::transport::IWebSocketTransport` interface, so you can inject your own transport (e.g. for tests) via the `ListenWebsocketClient`/`SpeakWebsocketClient`/`ListenFluxClient` constructors. A `CurlHttpTransport` (backed by [libcurl](https://curl.se/libcurl/)) is also vendored for upcoming REST API support. All third-party dependencies are fetched from source via CMake `FetchContent` — no Boost, no vcpkg required.
 
 ## Available Models & Voices
 
@@ -72,8 +72,7 @@
 
 - C++17 compiler
 - [CMake](https://cmake.org/) >= 3.16
-- [Boost](https://www.boost.org/) (system, thread)
-- [OpenSSL](https://www.openssl.org/)
+- OpenSSL development headers (used to build libcurl/libwebsockets from source; e.g. `brew install openssl@3` on macOS)
 
 ### Build Instructions
 
@@ -84,7 +83,7 @@ cmake -S . -B build
 cmake --build build
 ```
 
-This will build the core library and example applications.
+This will build the core library and example applications. The first configure will fetch and build spdlog, nlohmann/json, libcurl, and libwebsockets from source, so it can take a few minutes.
 
 ## Example Usage
 
@@ -262,6 +261,7 @@ Pull requests and issues are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.
 
 - [x] **WebSocket Streaming APIs** - Both STT and TTS with real-time streaming
 - [x] **Flux API Support** - Latest Deepgram streaming transcription technology
+- [x] **libwebsockets-based transport** - Replaced Boost.Asio/Boost.Beast with libwebsockets behind an `IWebSocketTransport` interface; no Boost dependency
 - [x] **Comprehensive Model Support** - Nova-3, Nova-2, Nova-1, Base, Enhanced, Whisper models
 - [x] **Advanced Voice Catalog** - 40+ Aura 2 English voices, 10+ Spanish voices with codeswitching
 - [x] **Multiple Audio Formats** - LINEAR16, FLAC, Opus, AMR, G729, AAC, MP3, and more
@@ -276,8 +276,7 @@ Pull requests and issues are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.
 
 ### 🚧 In Progress
 
-- [ ] **REST API Support** - Add support for batch transcription and synthesis
-- [ ] **Alternative Networking** - Reduce Boost.Asio dependency with lighter alternatives
+- [ ] **REST API Support** - Add support for batch transcription and synthesis (an `IHttpTransport`/`CurlHttpTransport` is already vendored, unused so far)
 - [ ] **Intelligence Layer** - Support for Deepgram's advanced AI features
 - [ ] **Audio Processing Utilities** - Built-in audio format conversion and preprocessing
 

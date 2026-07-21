@@ -2,6 +2,7 @@
 
 #include <deepgrampp_lib_export.h>
 #include "speak.hpp"
+#include "transport/websocket_transport.hpp"
 #include <functional>
 #include <memory>
 
@@ -21,12 +22,20 @@ namespace deepgram
         class DEEPGRAMPP_EXPORT SpeakWebsocketClient
         {
         public:
-            SpeakWebsocketClient(const std::string &apiKey);
+            /**
+             * @param apiKey Your Deepgram API key for authentication.
+             * @param wsTransport Optional WebSocket transport to use instead of the default
+             *        libwebsockets-based transport (deepgram::transport::LwsWebSocketTransport).
+             *        Useful for tests or to plug in a different networking stack.
+             */
+            SpeakWebsocketClient(const std::string &apiKey,
+                                  std::shared_ptr<transport::IWebSocketTransport> wsTransport = nullptr);
             ~SpeakWebsocketClient();
 
             /**
              * Connects to the WebSocket server.
              * This method establishes a connection to the Deepgram WebSocket server.
+             * Audio/message delivery begins automatically once this returns successfully.
              * @param config The configuration for the live speech session.
              * @return True if the connection was successful, false otherwise.
              */
@@ -39,8 +48,8 @@ namespace deepgram
             void close();
 
             /**
-             * Starts receiving audio data from the WebSocket.
-             * This method begins the process of receiving audio data from the Deepgram WebSocket server.
+             * @deprecated No longer required: audio/message delivery starts automatically
+             * once connect() succeeds. Kept as a no-op for source compatibility.
              */
             void startReceiving();
 

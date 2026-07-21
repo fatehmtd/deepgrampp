@@ -3,6 +3,7 @@
 #include <deepgrampp_lib_export.h>
 #include "listen.hpp"
 #include "deepgram.hpp"
+#include "transport/websocket_transport.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -32,14 +33,13 @@ namespace deepgram
             /**
              * @brief Constructs a WebSocket client for Deepgram's Listen API.
              *
-             * @param host The hostname of the Deepgram API server (e.g., "api.deepgram.com").
              * @param apiKey Your Deepgram API key for authentication.
-             * @param port The port to connect to (default is "443" for HTTPS).
-             *
-             * This constructor initializes the WebSocket client with the provided host, API key, and port.
-             * It sets up the SSL context and prepares the WebSocket stream for communication.
+             * @param wsTransport Optional WebSocket transport to use instead of the default
+             *        libwebsockets-based transport (deepgram::transport::LwsWebSocketTransport).
+             *        Useful for tests or to plug in a different networking stack.
              */
-            ListenWebsocketClient(const std::string &apiKey);
+            ListenWebsocketClient(const std::string &apiKey,
+                                   std::shared_ptr<transport::IWebSocketTransport> wsTransport = nullptr);
             ~ListenWebsocketClient();
 
             /**
@@ -47,14 +47,15 @@ namespace deepgram
              *
              * @return true if the connection was successful, false otherwise.
              *
-             * This method resolves the host and port, performs the SSL handshake, and establishes the WebSocket connection.
-             * It also sets the necessary headers for authentication.
-             * After a successful connection, it sets the `connected_` flag to true and starts the receiving loop.
-             *
-             * @note This method should be called before starting to send or receive messages.
+             * Blocks until the SSL and WebSocket handshakes complete. Message delivery
+             * begins automatically as soon as this returns successfully.
              */
             bool connect(const LiveTranscriptionOptions &options);
 
+            /**
+             * @deprecated No longer required: message delivery starts automatically once
+             * connect() succeeds. Kept as a no-op for source compatibility.
+             */
             void startReceiving();
             void startKeepalive();
             bool streamAudio(const std::vector<uint8_t> &audioData, int chunkSize=4096);
@@ -79,6 +80,10 @@ namespace deepgram
             void setOnSpeechStarted(SpeechStartedCallback cb);
             void setUtteranceEndCallback(UtteranceEndCallback cb);
 
+            /**
+             * @deprecated Message delivery stops automatically when close() is called.
+             * Kept as a no-op for source compatibility.
+             */
             void stopReceiving();
             void close();
 

@@ -1,33 +1,13 @@
 #include "listen-flux.hpp"
-#include "impl/listen-flux-impl-boost.hpp"
+#include "impl/listen-flux-impl-lws.hpp"
 #include <spdlog/spdlog.h>
 
-deepgram::listen::flux::ListenFluxClient::ListenFluxClient(const std::string& apiKey) : _fluxClientImpl(
-    std::make_unique<ListenFluxClientImpl>("api.deepgram.com", apiKey, "443")
+deepgram::listen::flux::ListenFluxClient::ListenFluxClient(const std::string& apiKey,
+    std::shared_ptr<deepgram::transport::IWebSocketTransport> wsTransport) : _fluxClientImpl(
+    std::make_unique<ListenFluxClientImpl>("api.deepgram.com", apiKey, std::move(wsTransport))
 )
 {
-}
-
-deepgram::listen::flux::ListenFluxClient::~ListenFluxClient()
-{
-}
-
-bool deepgram::listen::flux::ListenFluxClient::connect(const FluxQueryParams& params)
-{
-    if (!_fluxClientImpl) {
-        spdlog::error("cannot connect, ListenFluxClientImpl is not initialized.");
-        return false;
-    }
-    return _fluxClientImpl->connect(params);
-}
-
-void deepgram::listen::flux::ListenFluxClient::startReceiving()
-{
-    if (!_fluxClientImpl) {
-        spdlog::error("cannot start receiving, ListenFluxClientImpl is not initialized.");
-        return;
-    }
-
+    // Wired up now, before connect() is ever called, so no messages are missed.
     std::function<void(const std::string&)> onDataReception = [this](const std::string& message) {
         try {
             auto jsonPayload = nlohmann::json::parse(message);
@@ -58,7 +38,27 @@ void deepgram::listen::flux::ListenFluxClient::startReceiving()
             spdlog::error("Error parsing message: {}, error: {}", message, e.what());
         }
         };
-    _fluxClientImpl->startReceiving(onDataReception);
+    _fluxClientImpl->setHandlers(onDataReception,
+        [](const std::string& error) { spdlog::error("Listen Flux transport error: {}", error); });
+}
+
+deepgram::listen::flux::ListenFluxClient::~ListenFluxClient()
+{
+}
+
+bool deepgram::listen::flux::ListenFluxClient::connect(const FluxQueryParams& params)
+{
+    if (!_fluxClientImpl) {
+        spdlog::error("cannot connect, ListenFluxClientImpl is not initialized.");
+        return false;
+    }
+    return _fluxClientImpl->connect(params);
+}
+
+void deepgram::listen::flux::ListenFluxClient::startReceiving()
+{
+    // No-op: message delivery starts automatically once connect() succeeds.
+    // Kept for source compatibility.
 }
 
 void deepgram::listen::flux::ListenFluxClient::stopReceiving()
@@ -102,4 +102,3 @@ void deepgram::listen::flux::ListenFluxClient::setOnFatalErrorCallback(OnFatalEr
 {
     _onFatalErrorCallback = callback;
 }
-

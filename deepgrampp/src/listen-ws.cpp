@@ -1,21 +1,20 @@
 
 #include "listen-ws.hpp"
-#include "impl/listen-ws-impl-boost.hpp"
+#include "impl/listen-ws-impl-lws.hpp"
 #include <spdlog/spdlog.h>
 
 using namespace deepgram::listen;
 
-using namespace boost;
-using namespace boost::beast;
-namespace net = boost::asio;
-namespace ssl = net::ssl;
-using tcp = net::ip::tcp;
-
-using Websocket = websocket::stream<ssl::stream<tcp::socket>>;
-
-ListenWebsocketClient::ListenWebsocketClient(const std::string &apiKey)
+ListenWebsocketClient::ListenWebsocketClient(const std::string &apiKey,
+                                              std::shared_ptr<transport::IWebSocketTransport> wsTransport)
 {
-    websocketClientImpl_ = std::make_unique<ListenWebsocketClientImpl>("api.deepgram.com", apiKey, "443");
+    websocketClientImpl_ = std::make_unique<ListenWebsocketClientImpl>("api.deepgram.com", apiKey, std::move(wsTransport));
+    // Wired up now, before connect() is ever called, so no messages are missed.
+    websocketClientImpl_->setHandlers(
+        [this](const std::string &message)
+        { handleResponse(message); },
+        [this](const std::string &error)
+        { onError_(error); });
 }
 
 ListenWebsocketClient::~ListenWebsocketClient()
@@ -34,13 +33,8 @@ bool ListenWebsocketClient::connect(const LiveTranscriptionOptions &options)
 
 void ListenWebsocketClient::startReceiving()
 {
-    if (!websocketClientImpl_) {
-        spdlog::error("can't start receiving, websocketClientImpl_ is not initialized");
-        return;
-    }
-    websocketClientImpl_->startReceiving([this](const std::string& message) {
-        handleResponse(message);
-    });
+    // No-op: message delivery starts automatically once connect() succeeds.
+    // Kept for source compatibility.
 }
 
 void ListenWebsocketClient::startKeepalive()
@@ -135,11 +129,8 @@ void ListenWebsocketClient::handleResponse(const std::string &message)
 
 void ListenWebsocketClient::stopReceiving()
 {
-    if (!websocketClientImpl_) {
-        spdlog::error("can't stop receiving, websocketClientImpl_ is not initialized");
-        return;
-    }
-    websocketClientImpl_->stopReceiving();
+    // No-op: message delivery stops automatically when close() is called.
+    // Kept for source compatibility.
 }
 
 void ListenWebsocketClient::close()

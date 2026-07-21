@@ -2,6 +2,7 @@
 #include <string>
 #include <optional>
 #include <sstream>
+#include <vector>
 #include <nlohmann/json.hpp>
 
 // Deepgram C++ SDK - Speak Module
@@ -292,11 +293,13 @@ namespace deepgram
          */
         struct LiveSpeakConfig
         {
+            // see https://developers.deepgram.com/reference/text-to-speech/speak-streaming
             std::string model = models::aura_2::en::THALIA; // Default model
-            std::string encoding = encoding::LINEAR_16;      // Encoding type, e.g., "linear16", "opus"
-            std::optional<int> sampleRate = 16000;         // Sample rate in Hz, default is 16000
+            std::string encoding = encoding::LINEAR_16;      // Encoding type: linear16, mulaw, alaw
+            std::optional<int> sampleRate = 16000;         // Sample rate in Hz (8000, 16000, 24000, 32000, 48000)
             std::optional<int> bitrate;                     // Bitrate in bits per second
             std::optional<std::string> container;           // Container format, e.g., "wav", "ogg"
+            std::optional<double> speed;                     // Speaking rate multiplier that adjusts the pace of generated speech, default 1
             std::optional<bool> mip_opt_out;
 
             std::string toQueryString(const std::string& prefix = "/v1/speak") const {
@@ -307,6 +310,9 @@ namespace deepgram
                 << "&encoding=" << encoding;
                 if(sampleRate.has_value()) {
                     oss << "&sample_rate=" << sampleRate.value();
+                }
+                if(speed.has_value()) {
+                    oss << "&speed=" << speed.value();
                 }
                 if(mip_opt_out.has_value()) {
                     oss << "&mip_opt_out=" << (mip_opt_out.value() ? "true" : "false");
@@ -337,14 +343,25 @@ namespace deepgram
         {
             std::string type;
             std::optional<int> sequenceId;
+            // Only present on "Warning" messages
+            std::optional<std::string> description;
+            std::optional<std::string> code;
 
             static SpeakControlResponse fromJson(const nlohmann::json &j)
             {
                 SpeakControlResponse response;
                 j.at("type").get_to(response.type);
-                if (j.contains("sequenceId"))
+                if (j.contains("sequence_id"))
                 {
-                    response.sequenceId = j.at("sequenceId").get<int>();
+                    response.sequenceId = j.at("sequence_id").get<int>();
+                }
+                if (j.contains("description"))
+                {
+                    response.description = j.at("description").get<std::string>();
+                }
+                if (j.contains("code"))
+                {
+                    response.code = j.at("code").get<std::string>();
                 }
                 return response;
             }
@@ -355,6 +372,12 @@ namespace deepgram
                     << " type: " << type;
                 if (sequenceId) {
                     oss << ", sequenceId: " << *sequenceId;
+                }
+                if (description) {
+                    oss << ", description: " << *description;
+                }
+                if (code) {
+                    oss << ", code: " << *code;
                 }
                 oss << " }";
                 return oss.str();
@@ -399,6 +422,7 @@ namespace deepgram
             std::optional<std::string> model_name;
             std::optional<std::string> model_version;
             std::optional<std::string> model_uuid;
+            std::vector<std::string> additional_model_uuids;
 
             static MetadataResponse fromJson(const nlohmann::json &j) {
                 MetadataResponse response;
@@ -414,6 +438,9 @@ namespace deepgram
                 }
                 if (j.contains("model_uuid")) {
                     response.model_uuid = j.at("model_uuid").get<std::string>();
+                }
+                if (j.contains("additional_model_uuids") && j["additional_model_uuids"].is_array()) {
+                    response.additional_model_uuids = j.at("additional_model_uuids").get<std::vector<std::string>>();
                 }
                 return response;
             }
