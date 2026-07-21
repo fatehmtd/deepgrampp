@@ -311,6 +311,12 @@ namespace deepgram
                 if(sampleRate.has_value()) {
                     oss << "&sample_rate=" << sampleRate.value();
                 }
+                if(bitrate.has_value()) {
+                    oss << "&bitrate=" << bitrate.value();
+                }
+                if(container.has_value()) {
+                    oss << "&container=" << container.value();
+                }
                 if(speed.has_value()) {
                     oss << "&speed=" << speed.value();
                 }

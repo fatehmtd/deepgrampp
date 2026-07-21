@@ -14,6 +14,8 @@ add_subdirectory(deepgrampp)
 
 if(DEEPGRAMPP_BUILD_EXAMPLES)
     add_subdirectory(examples/listen)
+    add_subdirectory(examples/listen-rest)
     add_subdirectory(examples/speak)
+    add_subdirectory(examples/speak-rest)
     add_subdirectory(examples/listen-flux)
 endif()
