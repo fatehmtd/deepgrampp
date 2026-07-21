@@ -33,7 +33,7 @@
 - **Memory-efficient streaming** with configurable chunk sizes
 
 > **Note:**
-> WebSocket streaming is implemented on top of [libwebsockets](https://libwebsockets.org/), behind a small `deepgram::transport::IWebSocketTransport` interface, so you can inject your own transport (e.g. for tests) via the `ListenWebsocketClient`/`SpeakWebsocketClient`/`ListenFluxClient` constructors. A `CurlHttpTransport` (backed by [libcurl](https://curl.se/libcurl/)) is also vendored for upcoming REST API support. All third-party dependencies are fetched from source via CMake `FetchContent` — no Boost, no vcpkg required.
+> WebSocket streaming is implemented on top of [libwebsockets](https://libwebsockets.org/), behind a small `deepgram::transport::IWebSocketTransport` interface, so you can inject your own transport (e.g. for tests) via the `ListenWebsocketClient`/`SpeakWebsocketClient`/`ListenFluxClient` constructors. A `CurlHttpTransport` (backed by [libcurl](https://curl.se/libcurl/)) is also vendored for upcoming REST API support. No Boost, no vcpkg required. Each dependency (spdlog, nlohmann/json, libcurl, libwebsockets) is looked up on the system first via CMake's `find_package` — using whatever package manager you already have (Homebrew, apt, pacman, a manual install, etc.) — and only fetched and built from source with `FetchContent` if it isn't found.
 
 ## Available Models & Voices
 
@@ -72,7 +72,7 @@
 
 - C++17 compiler
 - [CMake](https://cmake.org/) >= 3.16
-- OpenSSL development headers (used to build libcurl/libwebsockets from source; e.g. `brew install openssl@3` on macOS)
+- OpenSSL development headers, only needed if libcurl/libwebsockets end up being built from source (see below) — e.g. `openssl-devel`/`libssl-dev` on Linux, `brew install openssl@3` on macOS. If CMake can't find your OpenSSL install automatically, point it at the right prefix with `-DOPENSSL_ROOT_DIR=...` or by setting `CMAKE_PREFIX_PATH`.
 
 ### Build Instructions
 
@@ -83,7 +83,7 @@ cmake -S . -B build
 cmake --build build
 ```
 
-This will build the core library and example applications. The first configure will fetch and build spdlog, nlohmann/json, libcurl, and libwebsockets from source, so it can take a few minutes.
+This will build the core library and example applications. spdlog, nlohmann/json, libcurl, and libwebsockets are each looked up on your system first (via `find_package`) and only fetched and built from source if not found, so the first configure can take a few minutes if any of them are missing.
 
 ## Example Usage
 
