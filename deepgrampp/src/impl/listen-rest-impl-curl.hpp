@@ -20,10 +20,11 @@ namespace deepgram
         public:
             ListenRestClientImpl(const std::string &host,
                                   const std::string &apiKey,
-                                  std::shared_ptr<transport::IHttpTransport> httpTransport)
+                                  std::shared_ptr<transport::IHttpTransport> httpTransport,
+                                  const std::string &caFilePath = {})
                 : _host(host), _apiKey(apiKey),
                   _httpTransport(httpTransport ? std::move(httpTransport)
-                                                : std::make_shared<transport::CurlHttpTransport>())
+                                                : std::make_shared<transport::CurlHttpTransport>(caFilePath))
             {
             }
 

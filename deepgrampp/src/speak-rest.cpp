@@ -5,9 +5,10 @@
 using namespace deepgram::speak;
 
 SpeakRestClient::SpeakRestClient(const std::string &apiKey,
-                                  std::shared_ptr<transport::IHttpTransport> httpTransport)
+                                  std::shared_ptr<transport::IHttpTransport> httpTransport,
+                                  const std::string &caFilePath)
 {
-    impl_ = std::make_unique<SpeakRestClientImpl>("api.deepgram.com", apiKey, std::move(httpTransport));
+    impl_ = std::make_unique<SpeakRestClientImpl>("api.deepgram.com", apiKey, std::move(httpTransport), caFilePath);
 }
 
 SpeakRestClient::~SpeakRestClient() = default;

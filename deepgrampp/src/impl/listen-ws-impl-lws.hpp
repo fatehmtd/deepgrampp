@@ -21,10 +21,11 @@ namespace deepgram
         public:
             ListenWebsocketClientImpl(const std::string &host,
                                        const std::string &apiKey,
-                                       std::shared_ptr<transport::IWebSocketTransport> wsTransport)
+                                       std::shared_ptr<transport::IWebSocketTransport> wsTransport,
+                                       const std::string &caFilePath = {})
                 : _host(host), _apiKey(apiKey),
                   _wsTransport(wsTransport ? std::move(wsTransport)
-                                            : std::make_shared<transport::LwsWebSocketTransport>())
+                                            : std::make_shared<transport::LwsWebSocketTransport>(caFilePath))
             {
             }
 

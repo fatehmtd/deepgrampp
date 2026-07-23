@@ -6,9 +6,10 @@
 using namespace deepgram::listen;
 
 ListenWebsocketClient::ListenWebsocketClient(const std::string &apiKey,
-                                              std::shared_ptr<transport::IWebSocketTransport> wsTransport)
+                                              std::shared_ptr<transport::IWebSocketTransport> wsTransport,
+                                              const std::string &caFilePath)
 {
-    websocketClientImpl_ = std::make_unique<ListenWebsocketClientImpl>("api.deepgram.com", apiKey, std::move(wsTransport));
+    websocketClientImpl_ = std::make_unique<ListenWebsocketClientImpl>("api.deepgram.com", apiKey, std::move(wsTransport), caFilePath);
     // Wired up now, before connect() is ever called, so no messages are missed.
     websocketClientImpl_->setHandlers(
         [this](const std::string &message)

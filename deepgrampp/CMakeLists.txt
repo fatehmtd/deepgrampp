@@ -58,12 +58,51 @@ else()
     FetchContent_MakeAvailable(nlohmann_json)
 endif()
 
+# mbedTLS -- TLS backend for curl and libwebsockets on non-Windows platforms
+# where no system OpenSSL can be assumed (notably Android). Mirrors sonioxpp's
+# resolution order: reuse a parent-provided 'mbedtls' target (e.g. the one
+# VASDK_ANDROID builds from source) before fetching our own.
+if(NOT WIN32 AND NOT TARGET mbedtls)
+    find_path(MBEDTLS_INCLUDE_DIR mbedtls/ssl.h)
+    find_library(MBEDTLS_LIBRARY mbedtls)
+    find_library(MBEDX509_LIBRARY mbedx509)
+    find_library(MBEDCRYPTO_LIBRARY mbedcrypto)
+
+    if(NOT (MBEDTLS_INCLUDE_DIR AND MBEDTLS_LIBRARY AND MBEDX509_LIBRARY AND MBEDCRYPTO_LIBRARY))
+        set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
+        set(ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+        set(MBEDTLS_FATAL_WARNINGS OFF CACHE BOOL "" FORCE)
+        set(USE_SHARED_MBEDTLS_LIBRARY OFF CACHE BOOL "" FORCE)
+        set(USE_STATIC_MBEDTLS_LIBRARY ON CACHE BOOL "" FORCE)
+        set(DISABLE_PACKAGE_CONFIG_AND_INSTALL ON CACHE BOOL "" FORCE)
+        FetchContent_Declare(
+            mbedtls
+            GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
+            GIT_TAG        v3.6.2
+            GIT_SHALLOW    TRUE
+        )
+        FetchContent_MakeAvailable(mbedtls)
+        set(MBEDTLS_INCLUDE_DIR "${mbedtls_SOURCE_DIR}/include" CACHE PATH "" FORCE)
+        set(MBEDTLS_LIBRARY mbedtls CACHE STRING "" FORCE)
+        set(MBEDX509_LIBRARY mbedx509 CACHE STRING "" FORCE)
+        set(MBEDCRYPTO_LIBRARY mbedcrypto CACHE STRING "" FORCE)
+    endif()
+endif()
+# If a parent build already provides the 'mbedtls' target (e.g. VASDK_ANDROID),
+# MBEDTLS_INCLUDE_DIR/MBEDTLS_LIBRARY/MBEDX509_LIBRARY/MBEDCRYPTO_LIBRARY are
+# expected to already be set as CACHE variables by that parent — same
+# convention sonioxpp relies on.
+
 # libcurl -- backs CurlHttpTransport, used by ListenRestClient/SpeakRestClient
-# for Deepgram's batch REST endpoints. TLS backend is platform-dependent when
-# built from source.
-find_package(CURL QUIET)
-if(CURL_FOUND)
-    message(STATUS "Using system libcurl ${CURL_VERSION_STRING}")
+# for Deepgram's batch REST endpoints. A parent build may already provide
+# CURL::libcurl (e.g. VASDK_ANDROID, which builds curl from source since
+# Android has no system curl for find_package to discover) -- reuse it
+# before fetching our own.
+if(NOT TARGET CURL::libcurl)
+    find_package(CURL QUIET)
+endif()
+if(TARGET CURL::libcurl)
+    message(STATUS "Using existing CURL::libcurl target")
 else()
     message(STATUS "libcurl not found on the system, fetching from source")
     set(CURL_USE_LIBIDN2   OFF CACHE BOOL "" FORCE)
@@ -78,9 +117,11 @@ else()
     if(WIN32)
         set(CURL_USE_SCHANNEL ON  CACHE BOOL "" FORCE)
         set(CURL_USE_OPENSSL  OFF CACHE BOOL "" FORCE)
+        set(CURL_USE_MBEDTLS  OFF CACHE BOOL "" FORCE)
     else()
         set(CURL_USE_SCHANNEL OFF CACHE BOOL "" FORCE)
-        set(CURL_USE_OPENSSL  ON  CACHE BOOL "" FORCE)
+        set(CURL_USE_OPENSSL  OFF CACHE BOOL "" FORCE)
+        set(CURL_USE_MBEDTLS  ON  CACHE BOOL "" FORCE)
     endif()
     FetchContent_Declare(
         CURL
@@ -89,13 +130,16 @@ else()
         GIT_SHALLOW    TRUE
     )
     FetchContent_MakeAvailable(CURL)
+    if(NOT TARGET CURL::libcurl AND TARGET libcurl)
+        add_library(CURL::libcurl ALIAS libcurl)
+    endif()
 endif()
 
 # libwebsockets -- cross-platform WebSocket transport used by Listen/Speak/Flux streaming
 find_package(libwebsockets QUIET CONFIG NO_CMAKE_PACKAGE_REGISTRY NO_CMAKE_SYSTEM_PACKAGE_REGISTRY)
 if(libwebsockets_FOUND)
     message(STATUS "Using system libwebsockets ${libwebsockets_VERSION}")
-else()
+elseif(NOT TARGET websockets)
     message(STATUS "libwebsockets not found on the system, fetching from source")
     set(LWS_WITH_SHARED           OFF CACHE BOOL "" FORCE)
     set(LWS_WITHOUT_TESTAPPS      ON  CACHE BOOL "" FORCE)
@@ -105,9 +149,13 @@ else()
     set(LWS_WITHOUT_TEST_ECHO     ON  CACHE BOOL "" FORCE)
     set(LWS_WITH_MINIMAL_EXAMPLES OFF CACHE BOOL "" FORCE)
     set(LWS_WITH_SSL              ON  CACHE BOOL "" FORCE)
-    set(LWS_WITH_OPENSSL          ON  CACHE BOOL "" FORCE)
+    # Build against the mbedTLS resolved above instead of a system/Homebrew
+    # OpenSSL, so this also works on Android (no system OpenSSL there).
+    set(LWS_WITH_OPENSSL          OFF CACHE BOOL "" FORCE)
     set(LWS_WITH_BORINGSSL        OFF CACHE BOOL "" FORCE)
-    set(LWS_WITH_MBEDTLS          OFF CACHE BOOL "" FORCE)
+    set(LWS_WITH_MBEDTLS          ON  CACHE BOOL "" FORCE)
+    set(LWS_MBEDTLS_INCLUDE_DIRS "${MBEDTLS_INCLUDE_DIR}" CACHE STRING "" FORCE)
+    set(LWS_MBEDTLS_LIBRARIES "${MBEDTLS_LIBRARY}" "${MBEDX509_LIBRARY}" "${MBEDCRYPTO_LIBRARY}" CACHE STRING "" FORCE)
     set(LWS_WITH_CLIENT           ON  CACHE BOOL "" FORCE)
     set(LWS_WITH_SERVER           OFF CACHE BOOL "" FORCE)
     set(LWS_WITH_HTTP2            OFF CACHE BOOL "" FORCE)
@@ -117,6 +165,10 @@ else()
     set(LWS_WITH_LIBUV            OFF CACHE BOOL "" FORCE)
     set(LWS_WITH_LIBEVENT         OFF CACHE BOOL "" FORCE)
     set(LWS_WITH_LIBEV            OFF CACHE BOOL "" FORCE)
+    # We only ever link the "websockets" target in-tree via FetchContent; skip its
+    # install(EXPORT) rules so they don't have to resolve every dependency (e.g.
+    # mbedtls, whose own install/export is disabled) into an export set.
+    set(LWS_WITH_EXPORT_LWSTARGETS OFF CACHE BOOL "" FORCE)
     FetchContent_Declare(
         libwebsockets
         GIT_REPOSITORY https://github.com/warmcat/libwebsockets.git

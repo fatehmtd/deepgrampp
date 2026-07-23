@@ -177,9 +177,15 @@ namespace deepgram {
                  * @param wsTransport Optional WebSocket transport to use instead of the default
                  *        libwebsockets-based transport (deepgram::transport::LwsWebSocketTransport).
                  *        Useful for tests or to plug in a different networking stack.
+                 * @param caFilePath Path to a PEM-encoded CA bundle passed to the default
+                 *        transport when `wsTransport` is null. Needed on platforms where
+                 *        the bundled mbedTLS backend has no visibility into the OS trust
+                 *        store (e.g. Android); leave empty elsewhere. Ignored if
+                 *        `wsTransport` is provided.
                  */
                 ListenFluxClient(const std::string& apiKey,
-                                  std::shared_ptr<deepgram::transport::IWebSocketTransport> wsTransport = nullptr);
+                                  std::shared_ptr<deepgram::transport::IWebSocketTransport> wsTransport = nullptr,
+                                  const std::string& caFilePath = {});
                 ~ListenFluxClient();
 
                 /**

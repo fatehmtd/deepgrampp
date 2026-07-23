@@ -4,9 +4,10 @@
 #include "speak-ws.hpp"
 
 deepgram::speak::SpeakWebsocketClient::SpeakWebsocketClient(const std::string &apiKey,
-                                                              std::shared_ptr<transport::IWebSocketTransport> wsTransport)
+                                                              std::shared_ptr<transport::IWebSocketTransport> wsTransport,
+                                                              const std::string &caFilePath)
 {
-    _speakWebsocketClientImpl = std::make_unique<SpeakWebsocketClientImpl>("api.deepgram.com", apiKey, std::move(wsTransport));
+    _speakWebsocketClientImpl = std::make_unique<SpeakWebsocketClientImpl>("api.deepgram.com", apiKey, std::move(wsTransport), caFilePath);
     // Wired up now, before connect() is ever called, so no messages are missed.
     _speakWebsocketClientImpl->setHandlers(
         [this](const char *data, int size)

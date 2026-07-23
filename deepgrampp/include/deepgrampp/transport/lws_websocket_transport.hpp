@@ -4,6 +4,7 @@
 #include "websocket_transport.hpp"
 
 #include <memory>
+#include <string>
 
 namespace deepgram
 {
@@ -19,7 +20,14 @@ namespace deepgram
         class DEEPGRAMPP_EXPORT LwsWebSocketTransport final : public IWebSocketTransport
         {
         public:
-            LwsWebSocketTransport();
+            /**
+             * @param caFilePath Path to a PEM-encoded CA bundle to use for verifying
+             *        server certificates. Needed on platforms where the bundled
+             *        mbedTLS backend has no visibility into the OS trust store (e.g.
+             *        Android); leave empty elsewhere to keep using libwebsockets'
+             *        platform default.
+             */
+            explicit LwsWebSocketTransport(std::string caFilePath = {});
             ~LwsWebSocketTransport() override;
 
             void setOnOpen(OpenHandler handler) override;

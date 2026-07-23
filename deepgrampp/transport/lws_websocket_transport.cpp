@@ -30,6 +30,7 @@ namespace deepgram
             std::string _path;
             bool _tls{true};
             std::map<std::string, std::string> _headers;
+            std::string _caFilePath;
 
             lws_context *_ctx{nullptr};
             lws *_wsi{nullptr};
@@ -373,9 +374,10 @@ namespace deepgram
         // Construction / destruction
         // ---------------------------------------------------------------------------
 
-        LwsWebSocketTransport::LwsWebSocketTransport()
+        LwsWebSocketTransport::LwsWebSocketTransport(std::string caFilePath)
             : _impl(std::make_unique<LwsWebSocketTransportImpl>())
         {
+            _impl->_caFilePath = std::move(caFilePath);
         }
 
         LwsWebSocketTransport::~LwsWebSocketTransport()
@@ -455,6 +457,14 @@ namespace deepgram
             ctx_info.protocols = kProtocols;
             ctx_info.user = _impl.get();
             ctx_info.options = LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
+
+            // mbedTLS (our TLS backend everywhere except Windows) ships with no built-in
+            // trust anchors, so without an explicit CA file every handshake fails with
+            // "CA is not trusted" -- see the caFilePath constructor argument.
+            if (!_impl->_caFilePath.empty())
+            {
+                ctx_info.client_ssl_ca_filepath = _impl->_caFilePath.c_str();
+            }
 
             _impl->_ctx = lws_create_context(&ctx_info);
             if (!_impl->_ctx)

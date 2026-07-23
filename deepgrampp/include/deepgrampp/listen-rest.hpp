@@ -43,9 +43,15 @@ namespace deepgram
              * @param httpTransport Optional HTTP transport to use instead of the
              *        default libcurl-based transport (deepgram::transport::CurlHttpTransport).
              *        Useful for tests or to plug in a different networking stack.
+             * @param caFilePath Path to a PEM-encoded CA bundle passed to the default
+             *        transport when `httpTransport` is null. Needed on platforms where
+             *        the bundled mbedTLS backend has no visibility into the OS trust
+             *        store (e.g. Android); leave empty elsewhere. Ignored if
+             *        `httpTransport` is provided.
              */
             ListenRestClient(const std::string &apiKey,
-                              std::shared_ptr<transport::IHttpTransport> httpTransport = nullptr);
+                              std::shared_ptr<transport::IHttpTransport> httpTransport = nullptr,
+                              const std::string &caFilePath = {});
             ~ListenRestClient();
 
             /**

@@ -74,6 +74,11 @@ namespace deepgram
 
         } // namespace
 
+        CurlHttpTransport::CurlHttpTransport(std::string caFilePath)
+            : _caFilePath(std::move(caFilePath))
+        {
+        }
+
         HttpResponse CurlHttpTransport::send(const HttpRequest &request)
         {
             static const int curlGlobalInitResult = []
@@ -98,6 +103,14 @@ namespace deepgram
             curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, writeHeaderCallback);
             curl_easy_setopt(curl, CURLOPT_HEADERDATA, &ctx);
             curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+            // mbedTLS (our TLS backend everywhere except Windows) ships with no built-in
+            // trust anchors, so without an explicit CA file every handshake fails with
+            // "CA is not trusted" -- see the caFilePath constructor argument.
+            if (!_caFilePath.empty())
+            {
+                curl_easy_setopt(curl, CURLOPT_CAINFO, _caFilePath.c_str());
+            }
 
             if (request.timeout_ms > 0)
             {

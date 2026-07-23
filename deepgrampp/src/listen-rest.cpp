@@ -5,9 +5,10 @@
 using namespace deepgram::listen;
 
 ListenRestClient::ListenRestClient(const std::string &apiKey,
-                                    std::shared_ptr<transport::IHttpTransport> httpTransport)
+                                    std::shared_ptr<transport::IHttpTransport> httpTransport,
+                                    const std::string &caFilePath)
 {
-    impl_ = std::make_unique<ListenRestClientImpl>("api.deepgram.com", apiKey, std::move(httpTransport));
+    impl_ = std::make_unique<ListenRestClientImpl>("api.deepgram.com", apiKey, std::move(httpTransport), caFilePath);
 }
 
 ListenRestClient::~ListenRestClient() = default;

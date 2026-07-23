@@ -3,8 +3,9 @@
 #include <spdlog/spdlog.h>
 
 deepgram::listen::flux::ListenFluxClient::ListenFluxClient(const std::string& apiKey,
-    std::shared_ptr<deepgram::transport::IWebSocketTransport> wsTransport) : _fluxClientImpl(
-    std::make_unique<ListenFluxClientImpl>("api.deepgram.com", apiKey, std::move(wsTransport))
+    std::shared_ptr<deepgram::transport::IWebSocketTransport> wsTransport,
+    const std::string& caFilePath) : _fluxClientImpl(
+    std::make_unique<ListenFluxClientImpl>("api.deepgram.com", apiKey, std::move(wsTransport), caFilePath)
 )
 {
     // Wired up now, before connect() is ever called, so no messages are missed.
