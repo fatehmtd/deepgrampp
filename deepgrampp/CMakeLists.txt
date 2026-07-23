@@ -63,12 +63,27 @@ endif()
 # resolution order: reuse a parent-provided 'mbedtls' target (e.g. the one
 # VASDK_ANDROID builds from source) before fetching our own.
 if(NOT WIN32 AND NOT TARGET mbedtls)
-    find_path(MBEDTLS_INCLUDE_DIR mbedtls/ssl.h)
-    find_library(MBEDTLS_LIBRARY mbedtls)
-    find_library(MBEDX509_LIBRARY mbedx509)
-    find_library(MBEDCRYPTO_LIBRARY mbedcrypto)
+    # Probe for a system mbedtls with dedicated variables, not
+    # MBEDTLS_INCLUDE_DIR/MBEDTLS_LIBRARY/etc themselves: those get
+    # CACHE FORCE-overwritten with FetchContent's own values below, so on the
+    # next reconfigure (e.g. CMake Tools re-running after any CMakeLists.txt
+    # edit) find_path/find_library would just see their own leftover values
+    # already cached and skip searching -- making this condition true forever
+    # afterwards and silently skipping FetchContent_MakeAvailable(mbedtls),
+    # which drops the 'mbedtls' target from the build without dropping the
+    # stale MBEDTLS_LIBRARY="mbedtls" string that libwebsockets/curl still
+    # link against, producing an unresolvable bare "-lmbedtls" at link time.
+    find_path(_system_mbedtls_include_dir mbedtls/ssl.h)
+    find_library(_system_mbedtls_lib mbedtls)
+    find_library(_system_mbedx509_lib mbedx509)
+    find_library(_system_mbedcrypto_lib mbedcrypto)
 
-    if(NOT (MBEDTLS_INCLUDE_DIR AND MBEDTLS_LIBRARY AND MBEDX509_LIBRARY AND MBEDCRYPTO_LIBRARY))
+    if(_system_mbedtls_include_dir AND _system_mbedtls_lib AND _system_mbedx509_lib AND _system_mbedcrypto_lib)
+        set(MBEDTLS_INCLUDE_DIR "${_system_mbedtls_include_dir}" CACHE PATH "" FORCE)
+        set(MBEDTLS_LIBRARY "${_system_mbedtls_lib}" CACHE STRING "" FORCE)
+        set(MBEDX509_LIBRARY "${_system_mbedx509_lib}" CACHE STRING "" FORCE)
+        set(MBEDCRYPTO_LIBRARY "${_system_mbedcrypto_lib}" CACHE STRING "" FORCE)
+    else()
         set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
         set(ENABLE_TESTING OFF CACHE BOOL "" FORCE)
         set(MBEDTLS_FATAL_WARNINGS OFF CACHE BOOL "" FORCE)
@@ -87,6 +102,10 @@ if(NOT WIN32 AND NOT TARGET mbedtls)
         set(MBEDX509_LIBRARY mbedx509 CACHE STRING "" FORCE)
         set(MBEDCRYPTO_LIBRARY mbedcrypto CACHE STRING "" FORCE)
     endif()
+    unset(_system_mbedtls_include_dir CACHE)
+    unset(_system_mbedtls_lib CACHE)
+    unset(_system_mbedx509_lib CACHE)
+    unset(_system_mbedcrypto_lib CACHE)
 endif()
 # If a parent build already provides the 'mbedtls' target (e.g. VASDK_ANDROID),
 # MBEDTLS_INCLUDE_DIR/MBEDTLS_LIBRARY/MBEDX509_LIBRARY/MBEDCRYPTO_LIBRARY are
@@ -174,6 +193,7 @@ elseif(NOT TARGET websockets)
         GIT_REPOSITORY https://github.com/warmcat/libwebsockets.git
         GIT_TAG        v4.3.3
         GIT_SHALLOW    TRUE
+        PATCH_COMMAND  ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/patch-libwebsockets-mbedtls-extensions.cmake
     )
     # libwebsockets v4.3.3 declares cmake_minimum_required < 3.5, which CMake 4.x removed.
     set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
