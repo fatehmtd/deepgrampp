@@ -58,11 +58,12 @@ else()
     FetchContent_MakeAvailable(nlohmann_json)
 endif()
 
-# mbedTLS -- TLS backend for curl and libwebsockets on non-Windows platforms
-# where no system OpenSSL can be assumed (notably Android). Mirrors sonioxpp's
-# resolution order: reuse a parent-provided 'mbedtls' target (e.g. the one
-# VASDK_ANDROID builds from source) before fetching our own.
-if(NOT WIN32 AND NOT TARGET mbedtls)
+# mbedTLS -- TLS backend for libwebsockets on every platform, and for curl
+# everywhere but Windows (where curl uses Schannel). No system OpenSSL can be
+# assumed (notably on Android and Windows). Mirrors sonioxpp's resolution
+# order: reuse a parent-provided 'mbedtls' target (e.g. the one VASDK_ANDROID
+# builds from source) before fetching our own.
+if(NOT TARGET mbedtls)
     # Probe for a system mbedtls with dedicated variables, not
     # MBEDTLS_INCLUDE_DIR/MBEDTLS_LIBRARY/etc themselves: those get
     # CACHE FORCE-overwritten with FetchContent's own values below, so on the

@@ -458,7 +458,7 @@ namespace deepgram
             ctx_info.user = _impl.get();
             ctx_info.options = LWS_SERVER_OPTION_DO_SSL_GLOBAL_INIT;
 
-            // mbedTLS (our TLS backend everywhere except Windows) ships with no built-in
+            // mbedTLS (our libwebsockets TLS backend on every platform) ships with no built-in
             // trust anchors, so without an explicit CA file every handshake fails with
             // "CA is not trusted" -- see the caFilePath constructor argument.
             if (!_impl->_caFilePath.empty())

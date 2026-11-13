@@ -5,6 +5,7 @@
 #include "transport/websocket_transport.hpp"
 #include <nlohmann/json.hpp>
 #include <memory>
+#include <optional>
 #include <sstream>
 
 /**

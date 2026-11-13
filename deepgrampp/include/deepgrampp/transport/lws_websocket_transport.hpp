@@ -22,10 +22,10 @@ namespace deepgram
         public:
             /**
              * @param caFilePath Path to a PEM-encoded CA bundle to use for verifying
-             *        server certificates. Needed on platforms where the bundled
-             *        mbedTLS backend has no visibility into the OS trust store (e.g.
-             *        Android); leave empty elsewhere to keep using libwebsockets'
-             *        platform default.
+             *        server certificates. The bundled mbedTLS backend has no
+             *        visibility into the OS trust store on any platform, so TLS
+             *        connections need one; empty uses libwebsockets' default (no
+             *        trust anchors).
              */
             explicit LwsWebSocketTransport(std::string caFilePath = {});
             ~LwsWebSocketTransport() override;
